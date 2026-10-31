@@ -3,7 +3,7 @@
 import dataclasses
 import json
 import pathlib
-from collections.abc import Mapping
+from collections.abc import Collection, Iterator, Mapping
 from typing import Any
 
 from jupedsim_repertoires import provenance
@@ -189,12 +189,25 @@ def load_records(path: pathlib.Path) -> list[dict]:
         return [json.loads(line) for line in file if line.strip()]
 
 
+def iter_records(
+    path: pathlib.Path, types: Collection[str] | None = None
+) -> Iterator[dict]:
+    """Stream the records of a log file one at a time.
+
+    Args:
+        path: Log file written by ``RunLog``.
+        types: Record types to yield; all records when ``None``.
+    """
+    with open(path, encoding="utf-8") as file:
+        records = (json.loads(line) for line in filter(str.strip, file))
+        yield from (r for r in records if types is None or r["type"] in types)
+
+
 def transitions_by_agent(path: pathlib.Path) -> dict[int, list[dict]]:
     """Group transition records by agent id, sorted by time."""
     result: dict[int, list[dict]] = {}
-    for record in load_records(path):
-        if record["type"] == "transition":
-            result.setdefault(record["agent_id"], []).append(record)
+    for record in iter_records(path, {"transition"}):
+        result.setdefault(record["agent_id"], []).append(record)
     for records in result.values():
         records.sort(key=lambda r: r["time"])
     return result

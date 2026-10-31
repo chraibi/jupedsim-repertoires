@@ -4,7 +4,12 @@ import json
 
 import pytest
 
-from jupedsim_repertoires.log import RunLog, load_records, transitions_by_agent
+from jupedsim_repertoires.log import (
+    RunLog,
+    iter_records,
+    load_records,
+    transitions_by_agent,
+)
 from jupedsim_repertoires.types import (
     BehaviouralState,
     Decision,
@@ -118,6 +123,29 @@ def test_requests_and_responses_round_trip(tmp_path):
     assert response["snapshot_time"] == 2.0
     assert [r["execution"] for r in by_type["execution"]] == ["x", "y"]
     assert by_type["diagnostic"][0]["detail"] == {"ids": [1, 2]}
+
+
+def test_iter_records_filters_by_type(tmp_path):
+    path = tmp_path / "run.jsonl"
+    with RunLog(path, {}) as log:
+        log.request(make_request())
+        log.response(Decision(7, ("a",)), 0, 2.0, unit_index=3)
+        log.transition(2.0, 1, 7, None, "a", "b", "event")
+    stream = iter_records(path, {"response", "transition"})
+    assert iter(stream) is stream
+    assert [r["type"] for r in stream] == ["response", "transition"]
+    assert list(iter_records(path)) == load_records(path)
+
+
+def test_iter_records_skips_blank_lines(tmp_path):
+    path = tmp_path / "run.jsonl"
+    with RunLog(path, {}) as log:
+        log.transition(2.0, 1, 7, None, "a", "b", "event")
+    with open(path, "a", encoding="utf-8") as file:
+        file.write("\n   \n")
+    records = list(iter_records(path))
+    assert records == load_records(path)
+    assert [r["type"] for r in records] == ["metadata", "transition"]
 
 
 def test_identical_runs_write_identical_files(tmp_path):

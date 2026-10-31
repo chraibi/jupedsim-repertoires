@@ -5,7 +5,7 @@ from collections.abc import Sequence
 
 import numpy as np
 
-from jupedsim_repertoires.log import load_records
+from jupedsim_repertoires.log import iter_records
 from jupedsim_repertoires.types import (
     Decision,
     DecisionRequest,
@@ -41,8 +41,7 @@ class ReplaySelector:
                 tuple(r["repertoires"]),
                 tuple(r.get("reasons", ())),
             )
-            for r in load_records(path)
-            if r["type"] == "response"
+            for r in iter_records(path, {"response"})
         }
 
     def decide(self, requests: Sequence[DecisionRequest]) -> list[Decision]:

@@ -11,7 +11,7 @@ import pathlib
 import jupedsim as jps
 
 from jupedsim_repertoires import FixedSelector, ReplaySelector
-from jupedsim_repertoires.log import load_records
+from jupedsim_repertoires.log import iter_records
 from jupedsim_repertoires.provenance import file_sha256
 from repertoire_examples import EntranceRuleSelector, RuleParameters
 from repertoire_examples.croma import (
@@ -72,17 +72,16 @@ def make_selector(args: argparse.Namespace, entrance):
 
 
 def print_summary(log: pathlib.Path) -> None:
-    records = load_records(log)
-    transitions = collections.Counter(
-        r["after"] for r in records if r["type"] == "transition"
-    )
-    reasons = collections.Counter(
-        reason
-        for r in records
-        if r["type"] == "response"
-        for reason in r.get("reasons", ())
-    )
-    handoffs = sum(r["type"] == "handoff" for r in records)
+    transitions: collections.Counter = collections.Counter()
+    reasons: collections.Counter = collections.Counter()
+    handoffs = 0
+    for r in iter_records(log):
+        if r["type"] == "transition":
+            transitions[r["after"]] += 1
+        elif r["type"] == "response":
+            reasons.update(r.get("reasons", ()))
+        elif r["type"] == "handoff":
+            handoffs += 1
     print(f"transitions: {dict(transitions)}")
     print(f"decision reasons: {dict(reasons)}")
     print(f"handoffs: {handoffs}")
