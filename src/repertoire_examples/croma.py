@@ -234,6 +234,8 @@ def build_2c120(
     every_nth_frame: int = 10,
     desired_speeds: tuple[float, float] | None = DESIRED_SPEEDS,
     speed_seed: int = 0,
+    diagnostic: bool = False,
+    input_checksum: str | None = None,
 ) -> tuple[jps.Simulation, RepertoireController, Inflow]:
     """Build the 2C120 scenario with no agent yet in the corridor.
 
@@ -252,6 +254,9 @@ def build_2c120(
         desired_speeds: Range from which each agent's desired speed is
             drawn uniformly (m/s), or None for the model's default.
         speed_seed: Seed of the desired speed draws.
+        diagnostic: Also log every observation (large logs).
+        input_checksum: SHA-256 of the input data file, recorded in the
+            run log, or None.
 
     Returns:
         The simulation, the controller and the inflow that adds agents.
@@ -295,6 +300,8 @@ def build_2c120(
             "memory": _MEMORY,
             **_rules_metadata(selector),
         },
+        diagnostic=diagnostic,
+        input_checksum=input_checksum,
     )
     controller = RepertoireController(
         sim,

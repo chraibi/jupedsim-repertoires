@@ -46,6 +46,11 @@ def parse_args() -> argparse.Namespace:
         help="HDF5 trajectory file to write (default: none)",
     )
     parser.add_argument("--every-nth-frame", type=int, default=4)
+    parser.add_argument(
+        "--diagnostic",
+        action="store_true",
+        help="also log every observation (large logs)",
+    )
     args = parser.parse_args()
     if args.selector == "replay" and args.replay_from is None:
         parser.error("--selector replay requires --replay-from")
@@ -81,6 +86,7 @@ def main() -> None:
         log_path=args.log,
         trajectory_path=args.trajectory,
         every_nth_frame=args.every_nth_frame,
+        diagnostic=args.diagnostic,
     )
     run(sim, controller, args.max_time)
     print(

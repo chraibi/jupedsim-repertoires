@@ -100,6 +100,7 @@ def build_entrance(
     decision_period: float = 2.0,
     trajectory_path: pathlib.Path | None = None,
     every_nth_frame: int = 4,
+    diagnostic: bool = False,
 ) -> tuple[jps.Simulation, RepertoireController]:
     """Build the entrance scenario with all agents queueing.
 
@@ -115,6 +116,7 @@ def build_entrance(
         trajectory_path: HDF5 trajectory file to write, or None for none;
             closed by :func:`run`. Agent ids match those in the run log.
         every_nth_frame: Iterations between recorded trajectory frames.
+        diagnostic: Also log every observation (large logs).
 
     Returns:
         The simulation and the controller driving its agents.
@@ -173,6 +175,7 @@ def build_entrance(
             "memory": _MEMORY,
             **_rules_metadata(selector),
         },
+        diagnostic=diagnostic,
     )
     controller = RepertoireController(
         sim,

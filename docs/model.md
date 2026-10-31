@@ -379,6 +379,16 @@ supported, or if JuPedSim's API changes in more than these places. A
 capability missing here goes upstream into JuPedSim; behavioural
 assumptions stay in this repository.
 
+## Run log
+
+Observations are written only in diagnostic mode (`--diagnostic`), as
+they make the log large. Analyses of what agents saw between decisions,
+such as the no-gap investigation, need a run with `--diagnostic`.
+
+The metadata record holds `diagnostic`, `code_revision` and, for 2C120,
+`input_checksum`, so a log states the code and the input data it came
+from.
+
 # Reference
 
 Sieben, A. and Postmes, T. (2025). Behavioural repertoires in moving

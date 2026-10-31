@@ -19,7 +19,7 @@ Usage:
     scorecard.py experiment OUT.json [--data FILE]
     scorecard.py MODEL OUT.json [--data FILE] [--wait-slack none|VALUE]
         [--queue-speed V --overtake-speed V] [--desired-speeds none|LO,HI]
-        [--seeds N]
+        [--seeds N] [--diagnostic]
 
 With --seeds N the run is repeated with speed seeds 0..N-1; the card
 holds the median of every number over the seeds and the per-seed cards.
@@ -55,7 +55,16 @@ def run(args, entrance, speeds, seed, crossings):
     log = args.out.with_suffix(".jsonl")
     if args.seeds > 1:
         log = args.out.with_suffix(f".seed{seed}.jsonl")
-    return card(args.model, entrance, log, args.data, crossings, speeds, seed)
+    return card(
+        args.model,
+        entrance,
+        log,
+        args.data,
+        crossings,
+        speeds,
+        seed,
+        args.diagnostic,
+    )
 
 
 def main():
@@ -70,6 +79,11 @@ def main():
     parser.add_argument("--overtake-speed", type=float, default=None)
     parser.add_argument("--desired-speeds", default=None)
     parser.add_argument("--seeds", type=int, default=1)
+    parser.add_argument(
+        "--diagnostic",
+        action="store_true",
+        help="also log every observation (large logs)",
+    )
     args = parser.parse_args()
     entrance = ENTRANCE
     if args.wait_slack is not None:

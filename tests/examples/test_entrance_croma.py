@@ -134,6 +134,20 @@ def test_metadata_records_scenario(tmp_path):
     assert metadata["rules"] == dataclasses.asdict(RuleParameters())
 
 
+def test_metadata_records_input_checksum(tmp_path):
+    sim, controller, inflow = build_2c120(
+        jps.CollisionFreeSpeedModelV3(),
+        entries=entries(),
+        selector=FixedSelector(),
+        log_path=tmp_path / "log.jsonl",
+        input_checksum="x",
+    )
+    run_2c120(sim, controller, inflow, 0.1)
+    metadata = load_records(tmp_path / "log.jsonl")[0]
+    assert metadata["input_checksum"] == "x"
+    assert metadata["diagnostic"] is False
+
+
 def test_agents_keep_their_drawn_desired_speeds(tmp_path):
     sim, controller, inflow = build(tmp_path, entries())
     step_until(sim, controller, inflow, 1.0)

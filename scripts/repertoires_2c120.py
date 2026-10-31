@@ -12,6 +12,7 @@ import jupedsim as jps
 
 from jupedsim_repertoires import FixedSelector, ReplaySelector
 from jupedsim_repertoires.log import load_records
+from jupedsim_repertoires.provenance import file_sha256
 from repertoire_examples import EntranceRuleSelector, RuleParameters
 from repertoire_examples.croma import (
     DOOR_OPEN_TIME,
@@ -51,6 +52,11 @@ def parse_args() -> argparse.Namespace:
         help="HDF5 trajectory file to write (default: none)",
     )
     parser.add_argument("--every-nth-frame", type=int, default=10)
+    parser.add_argument(
+        "--diagnostic",
+        action="store_true",
+        help="also log every observation (large logs)",
+    )
     args = parser.parse_args()
     if args.selector == "replay" and args.replay_from is None:
         parser.error("--selector replay requires --replay-from")
@@ -93,6 +99,8 @@ def main() -> None:
         entrance=entrance,
         trajectory_path=args.trajectory,
         every_nth_frame=args.every_nth_frame,
+        diagnostic=args.diagnostic,
+        input_checksum=file_sha256(args.data),
     )
     run_2c120(sim, controller, inflow, args.max_time)
     print(

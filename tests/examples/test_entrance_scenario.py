@@ -229,3 +229,28 @@ def test_no_trajectory_file_by_default(tmp_path):
     )
     run(sim, controller, 1.0)
     assert sorted(p.name for p in tmp_path.iterdir()) == ["log.jsonl"]
+
+
+def observation_run(tmp_path, **kwargs):
+    sim, controller = build_entrance(
+        jps.CollisionFreeSpeedModelV3(),
+        n_agents=5,
+        seed=SEED,
+        selector=FixedSelector(),
+        log_path=tmp_path / "log.jsonl",
+        **kwargs,
+    )
+    run(sim, controller, 1.0)
+    return load_records(tmp_path / "log.jsonl")
+
+
+def test_entrance_log_has_no_observations_by_default(tmp_path):
+    records = observation_run(tmp_path)
+    assert not [r for r in records if r["type"] == "observation"]
+    assert records[0]["diagnostic"] is False
+
+
+def test_entrance_diagnostic_log_has_observations(tmp_path):
+    records = observation_run(tmp_path, diagnostic=True)
+    assert [r for r in records if r["type"] == "observation"]
+    assert records[0]["diagnostic"] is True

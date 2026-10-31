@@ -41,6 +41,11 @@ def parse_args() -> argparse.Namespace:
         "--gif", type=pathlib.Path, default=pathlib.Path("demo.gif")
     )
     parser.add_argument("--max-time", type=float, default=60.0)
+    parser.add_argument(
+        "--diagnostic",
+        action="store_true",
+        help="also log every observation (large logs)",
+    )
     return parser.parse_args()
 
 
@@ -94,6 +99,7 @@ def main() -> None:
             RuleParameters(), DEMO_ENTRANCE, CORRIDOR
         ),
         log_path=args.log,
+        diagnostic=args.diagnostic,
     )
     frames = []
     run_demo(sim, controller, args.max_time, recorder(frames, standing))

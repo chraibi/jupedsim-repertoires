@@ -14,6 +14,8 @@ import pathlib
 import jupedsim as jps
 import numpy as np
 
+from jupedsim_repertoires.provenance import file_sha256
+
 from .croma import (
     DESIRED_SPEEDS,
     DOOR_OPEN_TIME,
@@ -134,7 +136,13 @@ class Recorder:
 
 
 def simulate(
-    model, entrance, log_path, data, desired_speeds=DESIRED_SPEEDS, seed=0
+    model,
+    entrance,
+    log_path,
+    data,
+    desired_speeds=DESIRED_SPEEDS,
+    seed=0,
+    diagnostic=False,
 ):
     """Run 2C120; removal times hold only agents that actually left."""
     sim, ctrl, inflow = build_2c120(
@@ -145,6 +153,8 @@ def simulate(
         entrance=entrance,
         desired_speeds=desired_speeds,
         speed_seed=seed,
+        diagnostic=diagnostic,
+        input_checksum=file_sha256(data),
     )
     recorder = Recorder()
     run_2c120(sim, ctrl, inflow, MAX_TIME, observe=recorder)
@@ -182,10 +192,11 @@ def card(
     crossings,
     desired_speeds=DESIRED_SPEEDS,
     seed=0,
+    diagnostic=False,
 ):
     """Card of one simulation run with the given speed seed."""
     tracks, removed, added = simulate(
-        model, entrance, log_path, data, desired_speeds, seed
+        model, entrance, log_path, data, desired_speeds, seed, diagnostic
     )
     out = {"seed": seed}
     out |= movement(tracks, np.array(entrance.entrance))

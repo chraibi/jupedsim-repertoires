@@ -55,6 +55,7 @@ def build_demo(
     entrance: EntranceParameters = DEMO_ENTRANCE,
     control_interval: int = 10,
     decision_period: float = 2.0,
+    diagnostic: bool = False,
 ) -> tuple[jps.Simulation, RepertoireController, int]:
     """Build the demo with the arriving agents queueing.
 
@@ -65,6 +66,7 @@ def build_demo(
         entrance: Parameters of the repertoires.
         control_interval: Iterations per controller step.
         decision_period: Seconds between periodic decisions of an agent.
+        diagnostic: Also log every observation (large logs).
 
     Returns:
         The simulation, the controller and the id of the standing person.
@@ -111,6 +113,7 @@ def build_demo(
             "memory": _MEMORY,
             **_rules_metadata(selector),
         },
+        diagnostic=diagnostic,
     )
     controller = RepertoireController(
         sim,
