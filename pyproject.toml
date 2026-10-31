@@ -1,0 +1,38 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "jupedsim-repertoires"
+version = "0.1.0"
+description = "Behavioural repertoires and selectors for JuPedSim (prototype)"
+readme = "README.md"
+license = "LGPL-3.0-or-later"
+requires-python = ">=3.12,<3.15"
+dependencies = [
+    "jupedsim",
+    "numpy~=2.2",
+    "shapely~=2.0",
+]
+
+[dependency-groups]
+dev = ["pytest", "ruff", "matplotlib", "pillow"]
+
+[tool.uv.sources]
+# WarpDriver and the agent state interface are not in a JuPedSim release
+# yet (1.4.2); pin a master commit until they are.
+jupedsim = { git = "https://github.com/PedestrianDynamics/jupedsim", rev = "189241a2cea6a303234e619588ef550ab5d5e814" }
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/jupedsim_repertoires", "src/repertoire_examples"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 80
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N"]
+ignore = ["E501"]

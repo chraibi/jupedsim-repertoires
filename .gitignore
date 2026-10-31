@@ -218,3 +218,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Project
+*.jsonl
+docs/slides/node_modules/
+docs/slides/dist/
+.DS_Store
