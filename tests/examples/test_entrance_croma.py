@@ -107,6 +107,21 @@ def test_nobody_leaves_before_the_door_opens(tmp_path):
     assert min(r["time"] for r in handoffs) >= OPEN
 
 
+def test_observe_sees_admitted_agents_before_each_step(tmp_path):
+    sim, controller, inflow = build(tmp_path, entries())
+    step = controller.step
+    seen = []
+
+    def observe(s, c):
+        assert s is sim and c is controller
+        seen.append((s.iteration_count(), sorted(a.id for a in s.agents())))
+
+    run_2c120(sim, controller, inflow, 1.0, observe=observe)
+    assert controller.step == step
+    assert seen[0] == (0, sorted(inflow.added.values())[:2])
+    assert [n for n, _ in seen] == list(range(0, sim.iteration_count(), 10))
+
+
 def test_metadata_records_scenario(tmp_path):
     selector = EntranceRuleSelector(RuleParameters(), ENTRANCE, corridor())
     sim, controller, inflow = build(tmp_path, entries(), selector)

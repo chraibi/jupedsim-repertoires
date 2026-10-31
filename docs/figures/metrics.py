@@ -5,18 +5,26 @@
 (c) Number of people out after the door opens, with quartile times and
     the largest gap.
 
+Usage:
+    metrics.py [--data FILE]
+
 Run with `uv run python` from the repository root (see README).
 """
 
+import argparse
 import dataclasses
 import pathlib
-import sys
 
 import matplotlib.pyplot as plt
 import numpy as np
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
-import scorecard  # noqa: E402
+from repertoire_examples.croma import DOOR_OPEN_TIME, ENTRANCE
+from repertoire_examples.evaluation import experiment, simulate
+
+DATA = pathlib.Path(
+    "/Users/chraibi/workspace/Writing/Motivation/motivation_code/"
+    "trajectories_croma/2C120_cam6_cam5_frameshift0_Combined.txt"
+)
 
 EXP = "#2d3142"
 SIM = "#4575b4"
@@ -45,11 +53,17 @@ def main():
     -----
     docs/repertoires/slides/public/metrics.png and metrics.pdf
     """
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--data", type=pathlib.Path, default=DATA, help="2C120 PeTrack file"
+    )
+    args = parser.parse_args()
+
     # --- Data ---
-    entrance = dataclasses.replace(scorecard.ENTRANCE, wait_slack=None)
-    exp_tracks, crossings = scorecard.experiment()
-    sim_tracks, removed, added = scorecard.simulate(
-        "cfsm-v2", entrance, pathlib.Path("/dev/null")
+    entrance = dataclasses.replace(ENTRANCE, wait_slack=None)
+    exp_tracks, crossings = experiment(args.data)
+    sim_tracks, removed, added = simulate(
+        "cfsm-v2", entrance, pathlib.Path("/dev/null"), args.data
     )
     exp_p, sim_p = (smooth(p) for p in pick_person(exp_tracks, sim_tracks, added))
     crossings, removed = np.sort(crossings), np.sort(removed)
@@ -62,7 +76,7 @@ def main():
 
     # --- Plot (a): track while waiting, centred on its mean position ---
     ax = axes[0]
-    door = np.array(scorecard.ENTRANCE.entrance)
+    door = np.array(ENTRANCE.entrance)
     for p, colour, style, name in (
         (exp_p, EXP, "-", "experiment"),
         (sim_p, SIM, "--", "simulation"),
@@ -113,7 +127,7 @@ def main():
         ax.plot(crossings[k - 1], k, "o", color=EXP, ms=4)
         ax.annotate(f"{k}th", xy=(crossings[k - 1] - 2, k + 3), ha="right",
                     fontsize=8.5, color="dimgrey")
-    grid = np.arange(scorecard.DOOR_OPEN_TIME, 200, 0.1)
+    grid = np.arange(DOOR_OPEN_TIME, 200, 0.1)
     gap = np.searchsorted(removed, grid, "right") - np.searchsorted(crossings, grid, "right")
     k = np.argmax(np.abs(gap))
     lo, hi = sorted((np.searchsorted(crossings, grid[k], "right"),
@@ -123,7 +137,7 @@ def main():
     ax.annotate(f"largest gap\n{abs(gap[k])} people", xy=(grid[k] + 1, lo - 1),
                 xytext=(grid[k] + 6, 35), ha="center", fontsize=8.5,
                 color="#bd0c0c", arrowprops=dict(arrowstyle="-", color="#bd0c0c", lw=0.8))
-    ax.set_xlim(scorecard.DOOR_OPEN_TIME - 2, 185)
+    ax.set_xlim(DOOR_OPEN_TIME - 2, 185)
     ax.set_xlabel("time (s)", color="dimgrey")
     ax.set_ylabel("people out", color="dimgrey")
     ax.set_title("(c) outflow", loc="left", fontsize=11)

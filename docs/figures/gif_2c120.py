@@ -5,7 +5,8 @@ door is drawn red while closed. With a wait slack, queueing agents that
 keep their place are shown as "waiting".
 
 Usage:
-    gif_2c120.py MODEL OUT.gif [--wait-slack none|VALUE] [--seed N]
+    gif_2c120.py MODEL OUT.gif [--data FILE] [--wait-slack none|VALUE]
+        [--seed N]
 
 Run with `uv run python` from the repository root (see README).
 """
@@ -53,34 +54,40 @@ def label(state, waits):
     return state.repertoire
 
 
-def record(model, entrance, seed=0):
+class FrameRecorder:
+    """Observer of a 2C120 run that keeps a frame every 50 iterations."""
+
+    def __init__(self, waits):
+        self.frames = []
+        self._waits = waits
+
+    def __call__(self, sim, ctrl):
+        if sim.iteration_count() % 50 != 0:
+            return
+        self.frames.append(
+            (
+                sim.elapsed_time(),
+                [
+                    (a.position[1], -a.position[0], label(ctrl.states.get(a.id), self._waits))
+                    for a in sim.agents()
+                ],
+            )
+        )
+
+
+def record(model, entrance, data, seed=0):
     sim, ctrl, inflow = build_2c120(
         model(),
-        entries=load_entries(DATA),
+        entries=load_entries(data),
         selector=EntranceRuleSelector(RuleParameters(), entrance, corridor()),
         log_path=pathlib.Path("/dev/null"),
         entrance=entrance,
         speed_seed=seed,
     )
     waits = entrance.wait_slack is not None
-    frames, step = [], ctrl.step
-
-    def stepped():
-        if sim.iteration_count() % 50 == 0:
-            frames.append(
-                (
-                    sim.elapsed_time(),
-                    [
-                        (a.position[1], -a.position[0], label(ctrl.states.get(a.id), waits))
-                        for a in sim.agents()
-                    ],
-                )
-            )
-        step()
-
-    ctrl.step = stepped
-    run_2c120(sim, ctrl, inflow, 250.0)
-    return frames, waits
+    recorder = FrameRecorder(waits)
+    run_2c120(sim, ctrl, inflow, 250.0, observe=recorder)
+    return recorder.frames, waits
 
 
 def animate(frames, waits, title, out):
@@ -116,6 +123,9 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("model", choices=sorted(MODELS))
     parser.add_argument("out", type=pathlib.Path)
+    parser.add_argument(
+        "--data", type=pathlib.Path, default=DATA, help="2C120 PeTrack file"
+    )
     parser.add_argument("--wait-slack", default=None)
     parser.add_argument("--seed", type=int, default=0)
     args = parser.parse_args()
@@ -124,7 +134,7 @@ def main():
         slack = None if args.wait_slack == "none" else float(args.wait_slack)
         entrance = dataclasses.replace(ENTRANCE, wait_slack=slack)
     model, title = MODELS[args.model]
-    frames, waits = record(model, entrance, args.seed)
+    frames, waits = record(model, entrance, args.data, args.seed)
     animate(frames, waits, title, args.out)
     print(f"{args.model}: {frames[-1][0]:.1f} s, {len(frames)} frames -> {args.out}")
 

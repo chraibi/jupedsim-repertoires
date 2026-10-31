@@ -13,6 +13,7 @@ behind the door is not simulated.
 
 import dataclasses
 import pathlib
+from collections.abc import Callable
 
 import jupedsim as jps
 import numpy as np
@@ -347,16 +348,24 @@ def run_2c120(
     controller: RepertoireController,
     inflow: Inflow,
     max_time: float,
+    observe: Callable[[jps.Simulation, RepertoireController], None]
+    | None = None,
 ) -> None:
     """Admit agents and step the controller until all left or timeout.
 
     The run ends once every entry was added and every agent left, or at
     ``max_time``. The run log and the trajectory file, if any, are closed
     at the end.
+
+    ``observe``, if given, is called as ``observe(sim, controller)`` once
+    per iteration, after due agents are admitted and before the
+    controller steps. Agents removed by the last step are not observed.
     """
     try:
         while _active(sim, inflow) and sim.elapsed_time() < max_time:
             inflow.admit(sim, controller)
+            if observe is not None:
+                observe(sim, controller)
             controller.step()
     finally:
         _close(_LOGS.pop(controller, None))

@@ -28,146 +28,26 @@ Run with `uv run python` from the repository root (see README).
 """
 
 import argparse
-import collections
 import dataclasses
 import json
 import pathlib
 
-import jupedsim as jps
 import numpy as np
 
-from repertoire_examples import EntranceRuleSelector, RuleParameters
-from repertoire_examples.croma import (
-    DESIRED_SPEEDS,
-    DOOR_OPEN_TIME,
-    ENTRANCE,
-    build_2c120,
-    corridor,
-    load_entries,
-    run_2c120,
+from repertoire_examples.croma import DESIRED_SPEEDS, ENTRANCE
+from repertoire_examples.evaluation import (
+    MODELS,
+    card,
+    experiment,
+    median,
+    movement,
+    outflow,
 )
 
 DATA = pathlib.Path(
     "/Users/chraibi/workspace/Writing/Motivation/motivation_code/"
     "trajectories_croma/2C120_cam6_cam5_frameshift0_Combined.txt"
 )
-DOOR_Y = 20.0
-WINDOW = 400  # samples of 0.1 s: the last 40 s before the door opens
-MODELS = {
-    "cfsm-v2": jps.CollisionFreeSpeedModelV2,
-    "warpdriver": jps.WarpDriverModel,
-}
-
-
-def movement(tracks, entrance):
-    """Median distance, sideways movement (m/min) and moving share."""
-    rows = []
-    kernel = np.ones(10) / 10
-    for p in tracks.values():
-        if len(p) < WINDOW:
-            continue
-        p = p[-WINDOW:]
-        p = np.column_stack(
-            [np.convolve(p[:, k], kernel, "valid") for k in (0, 1)]
-        )
-        d = np.diff(p, axis=0)
-        u = entrance - p[:-1]
-        u /= np.linalg.norm(u, axis=1)[:, None]
-        lateral = np.abs(d[:, 0] * u[:, 1] - d[:, 1] * u[:, 0])
-        step = np.linalg.norm(d, axis=1)
-        minutes = len(d) * 0.1 / 60
-        rows.append(
-            [step.sum() / minutes, lateral.sum() / minutes, np.mean(step > 0.01)]
-        )
-    med = np.median(rows, axis=0)
-    return {
-        "people_waiting": len(rows),
-        "walked_m_per_min": round(med[0], 2),
-        "sideways_m_per_min": round(med[1], 2),
-        "moving_share": round(med[2], 2),
-    }
-
-
-def outflow(times, reference=None, complete=True):
-    times = np.sort(times)
-    out = {
-        "person_25": nth(times, 25),
-        "person_50": nth(times, 50),
-        "person_75": nth(times, 75),
-        "last": round(times[-1], 1) if complete else None,
-    }
-    if reference is not None:
-        grid = np.arange(DOOR_OPEN_TIME, 250, 0.1)
-        n = np.searchsorted(times, grid, side="right")
-        n_ref = np.searchsorted(reference, grid, side="right")
-        out["max_count_difference"] = int(np.abs(n - n_ref).max())
-    return out
-
-
-def nth(times, n):
-    """Removal time of the n-th person, None if fewer were removed."""
-    return round(times[n - 1], 1) if len(times) >= n else None
-
-
-def experiment(data=DATA):
-    d = np.loadtxt(data, comments="#")
-    d = d[d[:, 1] % 5 == 0]
-    # Simulation time starts at the first recorded frame, as in load_entries.
-    t = (d[:, 1] - d[:, 1].min()) / 50
-    waiting = d[(t < DOOR_OPEN_TIME) & (d[:, 3] < DOOR_Y)]
-    tracks = {}
-    for i in np.unique(waiting[:, 0]):
-        rows = waiting[waiting[:, 0] == i]
-        tracks[i] = rows[np.argsort(rows[:, 1])][:, 2:4]
-    crossings = []
-    for i in np.unique(d[:, 0]):
-        rows = d[(d[:, 0] == i) & (t > DOOR_OPEN_TIME) & (d[:, 3] >= DOOR_Y)]
-        if len(rows):
-            crossings.append(t[(d[:, 0] == i) & (t > DOOR_OPEN_TIME) & (d[:, 3] >= DOOR_Y)].min())
-    return tracks, np.array(crossings)
-
-
-def simulate(
-    model, entrance, log_path, desired_speeds=DESIRED_SPEEDS, seed=0, data=DATA
-):
-    """Run 2C120; removal times hold only agents that actually left."""
-    sim, ctrl, inflow = build_2c120(
-        MODELS[model](),
-        entries=load_entries(data),
-        selector=EntranceRuleSelector(RuleParameters(), entrance, corridor()),
-        log_path=log_path,
-        entrance=entrance,
-        desired_speeds=desired_speeds,
-        speed_seed=seed,
-    )
-    tracks, removed, alive = collections.defaultdict(list), [], set()
-    step = ctrl.step
-
-    def record():
-        nonlocal alive
-        now = {a.id for a in sim.agents()}
-        removed.extend([sim.elapsed_time()] * len(alive - now))
-        alive = now
-        if sim.elapsed_time() < DOOR_OPEN_TIME:
-            for a in sim.agents():
-                if a.id in ctrl.states:
-                    tracks[a.id].append(a.position)
-        step()
-
-    ctrl.step = record
-    run_2c120(sim, ctrl, inflow, 300.0)
-    tracks = {i: np.array(p) for i, p in tracks.items()}
-    return tracks, np.array(removed), dict(inflow.added)
-
-
-def events(log_path):
-    counts = collections.Counter()
-    for line in open(log_path):
-        rec = json.loads(line)
-        for cause in str(rec.get("cause", "")).split(","):
-            if cause.startswith("overtake_"):
-                counts[cause] += 1
-    return dict(counts)
 
 
 def run(args, entrance, speeds, seed, crossings):
@@ -175,36 +55,7 @@ def run(args, entrance, speeds, seed, crossings):
     log = args.out.with_suffix(".jsonl")
     if args.seeds > 1:
         log = args.out.with_suffix(f".seed{seed}.jsonl")
-    tracks, removed, added = simulate(
-        args.model, entrance, log, speeds, seed, args.data
-    )
-    card = {"seed": seed}
-    card |= movement(tracks, np.array(entrance.entrance))
-    card["remaining"] = len(added) - len(removed)
-    card["pending"] = len(load_entries(args.data)) - len(added)
-    card["completed"] = card["remaining"] == 0 and card["pending"] == 0
-    card |= outflow(removed, crossings, card["completed"])
-    card["events"] = events(log)
-    return card
-
-
-def median(runs):
-    """Median of every number over the runs, with the runs themselves."""
-    keys = [k for k in runs[0] if k not in ("seed", "events", "completed")]
-    card = {k: median_of([r[k] for r in runs]) for k in keys}
-    card["completed"] = all(r["completed"] for r in runs)
-    causes = sorted({c for r in runs for c in r["events"]})
-    card["events"] = {
-        c: float(np.median([r["events"].get(c, 0) for r in runs])) for c in causes
-    }
-    return card | {"seeds": len(runs), "per_seed": runs}
-
-
-def median_of(values):
-    """Median rounded to 0.01, None if any run lacks the value."""
-    if None in values:
-        return None
-    return round(float(np.median(values)), 2)
+    return card(args.model, entrance, log, args.data, crossings, speeds, seed)
 
 
 def main():
