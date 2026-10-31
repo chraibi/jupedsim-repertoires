@@ -11,11 +11,16 @@ import pathlib
 
 HERE = pathlib.Path(__file__).parent
 
-METADATA = {"scenario": "fixture", "type": "metadata"}
+METADATA = {"decision_period": 0.30000000000000004, "scenario": "fixture", "type": "metadata"}
 
 
 def dump(record: dict) -> str:
     return json.dumps(record, sort_keys=True)
+
+
+def snapshot_time(decision_index: int) -> float:
+    """Full-precision floats catch JSON parsers that round when reading."""
+    return [22.148440758326842, 0.30000000000000004, 0.1][decision_index % 3] + decision_index
 
 
 def request(unit_index: int, decision_index: int) -> dict:
@@ -24,9 +29,9 @@ def request(unit_index: int, decision_index: int) -> dict:
         "decision_index": decision_index,
         "events": [],
         "members": [unit_id],
-        "observations": [{"agent_id": unit_id, "distance": 1.5}],
-        "snapshot_time": float(decision_index),
-        "states": [{"commitment_since": 0.0, "repertoire": "queueing"}],
+        "observations": [{"agent_id": unit_id, "distance": 1.4142135623730951}],
+        "snapshot_time": snapshot_time(decision_index),
+        "states": [{"commitment_since": 2.718281828459045, "repertoire": "queueing"}],
         "type": "request",
         "unit_id": unit_id,
         "unit_index": unit_index,
@@ -38,7 +43,7 @@ def response(unit_index: int, decision_index: int) -> dict:
         "decision_index": decision_index,
         "reasons": ["fixture"],
         "repertoires": ["queueing"],
-        "snapshot_time": float(decision_index),
+        "snapshot_time": snapshot_time(decision_index),
         "type": "response",
         "unit_id": unit_index + 1,
         "unit_index": unit_index,
@@ -86,7 +91,7 @@ def main() -> None:
     write("orphan_response.jsonl", base + [dump(response(5, 0))])
     truncated = base[:-1] + [base[-1][: len(base[-1]) // 2]]
     write("not_json.jsonl", truncated, final_newline=False)
-    nan_request = dump(request(0, 0)).replace('"snapshot_time": 0.0', '"snapshot_time": NaN')
+    nan_request = dump(request(0, 0)).replace(f'"snapshot_time": {snapshot_time(0)!r}', '"snapshot_time": NaN')
     write("nan.jsonl", [dump(METADATA), nan_request])
     write("no_metadata.jsonl", base[1:])
     write("empty.jsonl", [])

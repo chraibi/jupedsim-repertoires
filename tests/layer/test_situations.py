@@ -91,7 +91,11 @@ def test_complete_export(out):
         "config_id": config_id,
         "bytes": len(data),
     }
-    assert manifest["metadata"] == {"scenario": "fixture", "type": "metadata"}
+    assert manifest["metadata"] == {
+        "decision_period": 0.30000000000000004,
+        "scenario": "fixture",
+        "type": "metadata",
+    }
     assert verify_export(out) == manifest
 
 

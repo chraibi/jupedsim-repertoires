@@ -91,3 +91,14 @@ def test_rust_matches_python(tmp_path, name, sample):
     assert sorted(p.name for p in rs_out.parent.iterdir()) == sorted(
         p.name for p in py_out.parent.iterdir()
     )
+
+
+def test_existing_export_is_refused(tmp_path):
+    source = FIXTURES / "complete.jsonl"
+    categories = []
+    for run, name in ((run_python, "py"), (run_rust, "rs")):
+        out = tmp_path / name / "x.jsonl"
+        out.parent.mkdir()
+        assert run(source, out, None) is None
+        categories.append(run(source, out, None))
+    assert categories == ["exists", "exists"]

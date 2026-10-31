@@ -29,7 +29,11 @@ type Record = Map<String, Value>;
 #[derive(Debug)]
 pub struct ExtractError {
     /// One of `exists`, `no-metadata`, `not-json`, `duplicate-request`,
-    /// `duplicate-response`, `orphan-response`, `source-changed` or `io`.
+    /// `duplicate-response`, `orphan-response`, `source-changed`, `io` or
+    /// `usage`. `usage` never reaches the command line because `main`
+    /// validates the output path first. Verifying an export
+    /// (`manifest-missing`, `checksum-mismatch`) is done by the Python
+    /// consumer; this crate does not implement it.
     pub category: &'static str,
     pub message: String,
 }
@@ -89,7 +93,7 @@ fn paths_for(output: &Path) -> std::result::Result<Paths, String> {
 }
 
 /// Check that `output` is a valid situations path (ends in `.jsonl`).
-pub fn output_paths(output: &Path) -> std::result::Result<(), String> {
+pub fn check_output_path(output: &Path) -> std::result::Result<(), String> {
     paths_for(output).map(|_| ())
 }
 
@@ -483,10 +487,10 @@ fn publish(
 
 /// Export the requests of the run log `source` as situations and labels.
 ///
-/// `output` must end in `.jsonl` (see [`output_paths`]); the labels and
+/// `output` must end in `.jsonl` (see [`check_output_path`]); the labels and
 /// manifest files are written next to it, the manifest last.
 pub fn extract_situations(source: &Path, output: &Path, options: &Options) -> Result<()> {
-    let paths = paths_for(output).map_err(|msg| ExtractError::new("io", msg))?;
+    let paths = paths_for(output).map_err(|msg| ExtractError::new("usage", msg))?;
     if !options.overwrite {
         check_absent(&paths)?;
     }

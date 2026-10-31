@@ -1,2 +1,2 @@
-{"scenario": "fixture", "type": "metadata"}
-{"decision_index": 0, "events": [], "members": [1], "observations": [{"agent_id": 1, "distance": 1.5}], "snapshot_time": NaN, "states": [{"commitment_since": 0.0, "repertoire": "queueing"}], "type": "request", "unit_id": 1, "unit_index": 0}
+{"decision_period": 0.30000000000000004, "scenario": "fixture", "type": "metadata"}
+{"decision_index": 0, "events": [], "members": [1], "observations": [{"agent_id": 1, "distance": 1.4142135623730951}], "snapshot_time": NaN, "states": [{"commitment_since": 2.718281828459045, "repertoire": "queueing"}], "type": "request", "unit_id": 1, "unit_index": 0}

@@ -1,2 +1,2 @@
-{"scenario": "fixture", "type": "metadata"}
+{"decision_period": 0.30000000000000004, "scenario": "fixture", "type": "metadata"}
 {"after": "queueing", "agent_id": 1, "before": "walking", "cause": "fixture", "group_id": null, "time": 0.0, "type": "transition", "unit_id": 1}
