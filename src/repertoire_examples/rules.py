@@ -23,13 +23,14 @@ import dataclasses
 from collections.abc import Sequence
 
 import shapely
-from jupedsim.repertoires import (
+
+from jupedsim_repertoires import (
     BehaviouralState,
     Decision,
     DecisionRequest,
     Observation,
 )
-from jupedsim.repertoires.perception import passes_since, progress_gained
+from jupedsim_repertoires.perception import passes_since, progress_gained
 
 from .entrance import EntranceParameters, Overtaking, Queueing, passing_point
 

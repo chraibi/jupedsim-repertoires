@@ -3,8 +3,9 @@
 import json
 
 import pytest
-from jupedsim.repertoires.log import RunLog, load_records, transitions_by_agent
-from jupedsim.repertoires.types import (
+
+from jupedsim_repertoires.log import RunLog, load_records, transitions_by_agent
+from jupedsim_repertoires.types import (
     BehaviouralState,
     Decision,
     DecisionRequest,

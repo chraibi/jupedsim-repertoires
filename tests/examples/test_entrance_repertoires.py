@@ -6,14 +6,15 @@ import math
 import jupedsim as jps
 import pytest
 import shapely
-from jupedsim.repertoires import (
+
+from jupedsim_repertoires import (
     BehaviouralState,
     Memory,
     Observation,
     PerceivedAgent,
 )
-from jupedsim.repertoires.perception import Perception
-from jupedsim_examples.repertoires import (
+from jupedsim_repertoires.perception import Perception
+from repertoire_examples import (
     EntranceParameters,
     Overtaking,
     Queueing,
@@ -21,7 +22,7 @@ from jupedsim_examples.repertoires import (
     passing_point,
     progress,
 )
-from jupedsim_examples.repertoires.entrance import ABANDONED_TARGET_LOST
+from repertoire_examples.entrance import ABANDONED_TARGET_LOST
 
 PARAMS = EntranceParameters()
 WALKABLE = shapely.Polygon([(0, 0), (20, 0), (20, 10), (0, 10)])

@@ -4,13 +4,14 @@ import math
 
 import jupedsim as jps
 import pytest
-from jupedsim.repertoires.perception import (
+
+from jupedsim_repertoires.perception import (
     MemoryTracker,
     Perception,
     passes_since,
     progress_gained,
 )
-from jupedsim.repertoires.types import Memory, PerceivedAgent
+from jupedsim_repertoires.types import Memory, PerceivedAgent
 
 
 def others(*rel, own=0.0):

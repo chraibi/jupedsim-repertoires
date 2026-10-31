@@ -2,9 +2,10 @@
 import math
 
 import jupedsim as jps
-from jupedsim.repertoires.log import load_records, transitions_by_agent
-from jupedsim_examples.repertoires import EntranceRuleSelector, RuleParameters
-from jupedsim_examples.repertoires.demo import (
+
+from jupedsim_repertoires.log import load_records, transitions_by_agent
+from repertoire_examples import EntranceRuleSelector, RuleParameters
+from repertoire_examples.demo import (
     ARRIVALS,
     CORRIDOR,
     DEMO_ENTRANCE,

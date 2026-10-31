@@ -9,10 +9,11 @@ import dataclasses
 import pathlib
 
 import jupedsim as jps
-from jupedsim.repertoires import FixedSelector, ReplaySelector
-from jupedsim.repertoires.log import load_records
-from jupedsim_examples.repertoires import EntranceRuleSelector, RuleParameters
-from jupedsim_examples.repertoires.croma import (
+
+from jupedsim_repertoires import FixedSelector, ReplaySelector
+from jupedsim_repertoires.log import load_records
+from repertoire_examples import EntranceRuleSelector, RuleParameters
+from repertoire_examples.croma import (
     DOOR_OPEN_TIME,
     ENTRANCE,
     build_2c120,

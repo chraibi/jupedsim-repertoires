@@ -5,7 +5,8 @@ import dataclasses
 import jupedsim as jps
 import pytest
 import shapely
-from jupedsim.repertoires import (
+
+from jupedsim_repertoires import (
     Capability,
     Command,
     Decision,
@@ -14,8 +15,8 @@ from jupedsim.repertoires import (
     SelectorError,
     model_capabilities,
 )
-from jupedsim.repertoires.log import RunLog, load_records
-from jupedsim.repertoires.perception import MemoryTracker, Perception
+from jupedsim_repertoires.log import RunLog, load_records
+from jupedsim_repertoires.perception import MemoryTracker, Perception
 
 ROOM = shapely.box(0, 0, 10, 10)
 BOTH = frozenset({Capability.TARGET_CONTROL, Capability.DESIRED_SPEED})

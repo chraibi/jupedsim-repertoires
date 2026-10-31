@@ -6,7 +6,7 @@ import pathlib
 from collections.abc import Mapping
 from typing import Any
 
-from jupedsim.repertoires.types import (
+from jupedsim_repertoires.types import (
     Decision,
     DecisionRequest,
     Observation,

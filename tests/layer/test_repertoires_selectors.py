@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 import pytest
-from jupedsim.repertoires import (
+
+from jupedsim_repertoires import (
     BehaviouralState,
     Decision,
     DecisionRequest,
@@ -11,7 +12,7 @@ from jupedsim.repertoires import (
     sampling_seed,
     validate,
 )
-from jupedsim.repertoires.log import RunLog
+from jupedsim_repertoires.log import RunLog
 
 
 def _state(repertoire: str, unit_id: int) -> BehaviouralState:

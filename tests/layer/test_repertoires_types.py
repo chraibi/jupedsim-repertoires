@@ -3,7 +3,8 @@
 import dataclasses
 
 import pytest
-from jupedsim.repertoires import BehaviouralState, Decision
+
+from jupedsim_repertoires import BehaviouralState, Decision
 
 
 def test_state_is_immutable():

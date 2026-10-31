@@ -2,14 +2,15 @@
 
 import pytest
 import shapely
-from jupedsim.repertoires import (
+
+from jupedsim_repertoires import (
     BehaviouralState,
     DecisionRequest,
     Memory,
     Observation,
     PerceivedAgent,
 )
-from jupedsim_examples.repertoires import (
+from repertoire_examples import (
     EntranceParameters,
     EntranceRuleSelector,
     RuleParameters,

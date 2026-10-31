@@ -6,15 +6,15 @@ from collections.abc import Mapping, Sequence
 
 import shapely
 
-from jupedsim.repertoires.diagnostics import anchor_cycles, anchor_structure
-from jupedsim.repertoires.log import RunLog
-from jupedsim.repertoires.perception import (
+from jupedsim_repertoires.diagnostics import anchor_cycles, anchor_structure
+from jupedsim_repertoires.log import RunLog
+from jupedsim_repertoires.perception import (
     MemoryTracker,
     Perception,
     passes_since,
 )
-from jupedsim.repertoires.selectors import validate
-from jupedsim.repertoires.types import (
+from jupedsim_repertoires.selectors import validate
+from jupedsim_repertoires.types import (
     BehaviouralState,
     Capability,
     Command,

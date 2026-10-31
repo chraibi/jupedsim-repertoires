@@ -5,14 +5,15 @@ import json
 import h5py
 import jupedsim as jps
 import pytest
-from jupedsim.repertoires import FixedSelector, ReplaySelector
-from jupedsim.repertoires.log import load_records, transitions_by_agent
-from jupedsim_examples.repertoires import (
+
+from jupedsim_repertoires import FixedSelector, ReplaySelector
+from jupedsim_repertoires.log import load_records, transitions_by_agent
+from repertoire_examples import (
     EntranceParameters,
     EntranceRuleSelector,
     RuleParameters,
 )
-from jupedsim_examples.repertoires.scenario import (
+from repertoire_examples.scenario import (
     build_entrance,
     run,
     walkable_area,

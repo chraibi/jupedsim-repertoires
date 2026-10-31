@@ -8,15 +8,16 @@ import pathlib
 
 import jupedsim as jps
 import matplotlib.pyplot as plt
-from jupedsim.repertoires.log import transitions_by_agent
-from jupedsim_examples.repertoires import EntranceRuleSelector, RuleParameters
-from jupedsim_examples.repertoires.demo import (
+from matplotlib.animation import FuncAnimation, PillowWriter
+
+from jupedsim_repertoires.log import transitions_by_agent
+from repertoire_examples import EntranceRuleSelector, RuleParameters
+from repertoire_examples.demo import (
     CORRIDOR,
     DEMO_ENTRANCE,
     build_demo,
     run_demo,
 )
-from matplotlib.animation import FuncAnimation, PillowWriter
 
 MODELS = {
     "cfsm": jps.CollisionFreeSpeedModel,

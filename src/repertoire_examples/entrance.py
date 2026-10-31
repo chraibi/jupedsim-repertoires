@@ -6,14 +6,15 @@ import math
 from collections.abc import Callable, Sequence
 
 import shapely
-from jupedsim.repertoires import (
+
+from jupedsim_repertoires import (
     BehaviouralState,
     Capability,
     Command,
     Observation,
     PerceivedAgent,
 )
-from jupedsim.repertoires.perception import progress_gained
+from jupedsim_repertoires.perception import progress_gained
 
 Point = tuple[float, float]
 

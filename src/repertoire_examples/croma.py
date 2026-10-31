@@ -17,13 +17,14 @@ import pathlib
 import jupedsim as jps
 import numpy as np
 import shapely
-from jupedsim.repertoires import (
+
+from jupedsim_repertoires import (
     RepertoireController,
     Selector,
     model_capabilities,
 )
-from jupedsim.repertoires.log import RunLog
-from jupedsim.repertoires.perception import MemoryTracker, Perception
+from jupedsim_repertoires.log import RunLog
+from jupedsim_repertoires.perception import MemoryTracker, Perception
 
 from .entrance import (
     EntranceParameters,

@@ -5,8 +5,8 @@ from collections.abc import Sequence
 
 import numpy as np
 
-from jupedsim.repertoires.log import load_records
-from jupedsim.repertoires.types import (
+from jupedsim_repertoires.log import load_records
+from jupedsim_repertoires.types import (
     Decision,
     DecisionRequest,
     SelectorError,
