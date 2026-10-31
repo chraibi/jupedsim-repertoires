@@ -389,6 +389,10 @@ The metadata record holds `diagnostic`, `code_revision` and, for 2C120,
 `input_checksum`, so a log states the code and the input data it came
 from.
 
+`jps-repertoires extract-situations --sample N` draws N decision requests
+uniformly. The sample is uniform over requests, not over people or time:
+a person who decides often is represented more often.
+
 # Reference
 
 Sieben, A. and Postmes, T. (2025). Behavioural repertoires in moving

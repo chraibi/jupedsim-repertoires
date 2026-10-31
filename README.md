@@ -69,6 +69,18 @@ entries not yet added.
 Each run writes a JSON Lines log next to its card (about 600 MB per run);
 logs are not committed.
 
+## Extracting situations
+
+```sh
+jps-repertoires extract-situations run.jsonl --output out/situations.jsonl [--sample N --seed S] [--overwrite]
+```
+
+This writes `situations.jsonl`, `situations.labels.jsonl` and
+`situations.manifest.json`. The manifest is written last; an export
+without a manifest is incomplete, and its checksums should be checked
+before the files are used. `--sample` is uniform over decision requests,
+not over people or time; without `--seed` it uses seed 0.
+
 ## History
 
 The code started on the JuPedSim branch `behavioural-repertoires`

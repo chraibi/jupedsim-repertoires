@@ -15,6 +15,9 @@ dependencies = [
     "shapely~=2.0",
 ]
 
+[project.scripts]
+jps-repertoires = "jupedsim_repertoires.cli:main"
+
 [dependency-groups]
 dev = ["pytest", "ruff", "matplotlib", "pillow"]
 
