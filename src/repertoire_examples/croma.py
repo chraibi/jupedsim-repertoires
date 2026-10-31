@@ -75,12 +75,16 @@ DOOR_OPEN_TIME = 90.5
 # over the first 20 s, 2.5 m/s, with the default ratio of overtaking to
 # queueing speed. The exit speed is the median speed of the people in
 # the doorway (y from 20 to 20.8 m) after the door opens, 0.8 m/s.
+# Waiting agents keep their place until the gap to the predecessor
+# exceeds the spacing by 0.4 m; this value brings the movement while the
+# door is closed close to that of the people.
 ENTRANCE = EntranceParameters(
     entrance=(-0.02, 19.6),
     queue_speed=2.5,
     overtake_speed=3.5,
     door_open_time=DOOR_OPEN_TIME,
     exit_speed=0.8,
+    wait_slack=0.4,
 )
 
 # Minimum distance to other agents at which an entering agent is added.

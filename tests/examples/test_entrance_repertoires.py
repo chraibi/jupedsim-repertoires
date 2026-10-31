@@ -93,6 +93,21 @@ def test_standing_within_tolerance():
     assert cmd.execution == "standing"
 
 
+def test_waiting_agent_keeps_its_place_within_slack():
+    params = dataclasses.replace(PARAMS, wait_slack=0.4)
+    q = Queueing(params, WALKABLE)
+    held = state(anchor=1, target=(14.0, 5.0))
+    cmd = q.control(obs((14.0, 5), [(1, (15.0, 5))]), held)
+    assert cmd.target == (14.0, 5.0)
+    assert cmd.execution == "standing"
+    cmd = q.control(obs((14.0, 5), [(1, (15.2, 5))]), held)
+    assert math.isclose(cmd.target[0], 14.5)
+    assert cmd.execution == "advancing"
+    moving = state(anchor=1, target=(14.0, 5.0), execution="advancing")
+    cmd = q.control(obs((13.0, 5), [(1, (15.0, 5))]), moving)
+    assert math.isclose(cmd.target[0], 14.3)
+
+
 def test_queueing_reacquires_when_predecessor_leaves():
     lost = Memory((), (), anchor_lost=True)
     o = obs((10, 5), [(7, (13, 5))], memory=lost)

@@ -33,6 +33,9 @@ class EntranceParameters:
         spacing: Queue spacing behind the predecessor (m).
         standing_tol: Distance to the queue target below which the agent
             counts as standing (m).
+        wait_slack: Distance beyond ``spacing`` up to which a standing
+            agent keeps its place instead of closing up to the
+            predecessor (m), or None to always close up.
         queue_speed: Desired speed while queueing (m/s).
         lateral_offset: Lateral distance of the passing point (m).
         wall_clearance: Distance kept from the walls by passing points (m).
@@ -60,6 +63,7 @@ class EntranceParameters:
     ahead_margin: float = 0.2
     spacing: float = 0.7
     standing_tol: float = 0.15
+    wait_slack: float | None = None
     queue_speed: float = 1.0
     lateral_offset: float = 0.8
     wall_clearance: float = 0.25
@@ -216,6 +220,10 @@ class Queueing:
         if self._needs_reacquisition(obs, state, pred):
             pred = _acquire_predecessor(self._params, obs)
         new_state = self._follow(obs, state, pred)
+        if self._waits(obs, state, pred):
+            new_state = dataclasses.replace(
+                new_state, execution="standing", target=state.target
+            )
         return Command(
             target=new_state.target,
             desired_speed=self._params.queue_speed,
@@ -232,6 +240,21 @@ class Queueing:
         if state.anchor is None or obs.memory.anchor_lost or pred is None:
             return True
         return pred.progress <= obs.progress + self._params.ahead_margin
+
+    def _waits(
+        self,
+        obs: Observation,
+        state: BehaviouralState,
+        pred: PerceivedAgent | None,
+    ) -> bool:
+        """Whether a standing agent keeps its place behind ``pred``."""
+        slack = self._params.wait_slack
+        if slack is None or pred is None or state.target is None:
+            return False
+        if state.execution != "standing":
+            return False
+        reach = self._params.spacing + slack
+        return math.dist(obs.position, pred.position) <= reach
 
     def _follow(
         self,
