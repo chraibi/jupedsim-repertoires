@@ -23,7 +23,7 @@ SAMPLING = "sampling.jsonl"
 pytestmark = pytest.mark.skipif(RUST is None, reason="extract-situations is not on PATH")
 
 CASES = [(path.name, None) for path in sorted(FIXTURES.glob("*.jsonl"))]
-CASES += [(SAMPLING, (5, 42)), (SAMPLING, (5, 0))]
+CASES += [(SAMPLING, (5, 42)), (SAMPLING, (5, 0)), (SAMPLING, (50, 42))]
 IGNORED_MANIFEST = ("extractor", "extractor_version", "outputs")
 
 
@@ -102,3 +102,38 @@ def test_existing_export_is_refused(tmp_path):
         assert run(source, out, None) is None
         categories.append(run(source, out, None))
     assert categories == ["exists", "exists"]
+
+
+@pytest.mark.parametrize("name", ["run.jsonl", "run.labels.jsonl", "run.manifest.json"])
+def test_source_as_output_is_refused_by_both(tmp_path, name):
+    content = (FIXTURES / "complete.jsonl").read_bytes()
+    source = tmp_path / name
+    source.write_bytes(content)
+    out = tmp_path / "run.jsonl"
+    with pytest.raises(ValueError):
+        extract_situations(source, out, overwrite=True)
+    assert source.read_bytes() == content
+    result = subprocess.run(
+        [RUST, str(source), "--output", str(out), "--overwrite"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 2
+    assert "source run log" in result.stderr
+    assert source.read_bytes() == content
+
+
+def test_hard_link_to_source_is_refused_by_rust(tmp_path):
+    source = tmp_path / "src.jsonl"
+    source.write_bytes((FIXTURES / "complete.jsonl").read_bytes())
+    out = tmp_path / "out.jsonl"
+    out.hardlink_to(source)
+    result = subprocess.run(
+        [RUST, str(source), "--output", str(out), "--overwrite"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 2
+    assert source.read_bytes() == (FIXTURES / "complete.jsonl").read_bytes()

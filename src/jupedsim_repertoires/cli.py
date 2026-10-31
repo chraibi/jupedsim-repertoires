@@ -73,6 +73,8 @@ def main(argv: list[str] | None = None) -> int:
             seed=args.seed or 0,
             overwrite=args.overwrite,
         )
+    except ValueError as err:
+        parser.error(str(err))
     except ExtractError as err:
         print(f"error[{err.category}]: {err}", file=sys.stderr)
         return 1

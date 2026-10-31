@@ -245,6 +245,25 @@ def _write_outputs(
     return temps[-2], temps[-1], missing
 
 
+def _same_file(a: pathlib.Path, b: pathlib.Path) -> bool:
+    if a.resolve() == b.resolve():
+        return True
+    return b.exists() and a.exists() and os.path.samefile(a, b)
+
+
+def _check_not_source(source: pathlib.Path, paths: tuple[pathlib.Path, ...]) -> None:
+    for path in paths:
+        if _same_file(source, path):
+            raise ValueError(f"output {path} is the source run log; refusing to overwrite it")
+
+
+def _check_sampling(sample: int | None, seed: int) -> None:
+    if sample is not None and sample < 1:
+        raise ValueError(f"sample must be at least 1, got {sample}")
+    if not 0 <= seed < 2**64:
+        raise ValueError(f"seed must satisfy 0 <= seed < 2**64, got {seed}")
+
+
 def _check_absent(paths: tuple[pathlib.Path, ...]) -> None:
     for path in paths:
         if path.exists():
@@ -353,9 +372,12 @@ def extract_situations(
 
     Raises:
         ExtractError: If the log breaks a rule or an output exists.
-        ValueError: If ``output``, ``sample`` or ``seed`` is invalid.
+        ValueError: If ``output``, ``sample`` or ``seed`` is invalid, or
+            an output path is the source run log.
     """
+    _check_sampling(sample, seed)
     paths = output_paths(output)
+    _check_not_source(source, paths)
     if not overwrite:
         _check_absent(paths)
     scan = _scan(source)
@@ -379,12 +401,17 @@ def _check_entry(name: str, path: pathlib.Path, entry: dict[str, Any]) -> None:
         raise ExtractError("checksum-mismatch", f"{name} file {path} does not match the manifest")
 
 
+def _check_manifest_shape(manifest: dict[str, Any]) -> None:
+    for name in ("situations", "labels"):
+        entry = manifest["outputs"][name]
+        if "sha256" not in entry or "bytes" not in entry:
+            raise ValueError(f"outputs.{name} lacks sha256 or bytes")
+
+
 def _read_manifest(path: pathlib.Path) -> dict[str, Any]:
     try:
         manifest = json.loads(path.read_text(encoding="utf-8"))
-        for name in ("situations", "labels"):
-            entry = manifest["outputs"][name]
-            entry["sha256"], entry["bytes"]
+        _check_manifest_shape(manifest)
     except (ValueError, KeyError, TypeError) as err:
         raise ExtractError("manifest-missing", f"{path} is not a valid manifest: {err}") from err
     return manifest

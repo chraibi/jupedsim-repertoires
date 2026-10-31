@@ -97,6 +97,46 @@ pub fn check_output_path(output: &Path) -> std::result::Result<(), String> {
     paths_for(output).map(|_| ())
 }
 
+/// Check that none of the output paths is the source run log.
+///
+/// Compares canonical paths; an existing output that is the same file as the
+/// source (for example a hard link) matches as well.
+pub fn check_not_source(source: &Path, output: &Path) -> std::result::Result<(), String> {
+    let paths = paths_for(output)?;
+    let source_canonical = std::fs::canonicalize(source).ok();
+    for path in [&paths.situations, &paths.labels, &paths.manifest] {
+        if is_same_file(source_canonical.as_deref(), path) {
+            return Err(format!(
+                "output {} is the source run log; refusing to overwrite it",
+                path.display()
+            ));
+        }
+    }
+    Ok(())
+}
+
+fn is_same_file(source: Option<&Path>, path: &Path) -> bool {
+    let Some(source) = source else { return false };
+    match std::fs::canonicalize(path) {
+        Ok(canonical) => canonical == source || same_inode(&canonical, source),
+        Err(_) => false,
+    }
+}
+
+#[cfg(unix)]
+fn same_inode(a: &Path, b: &Path) -> bool {
+    use std::os::unix::fs::MetadataExt;
+    match (std::fs::metadata(a), std::fs::metadata(b)) {
+        (Ok(x), Ok(y)) => x.dev() == y.dev() && x.ino() == y.ino(),
+        _ => false,
+    }
+}
+
+#[cfg(not(unix))]
+fn same_inode(_a: &Path, _b: &Path) -> bool {
+    false
+}
+
 /// Temporary files that are removed when the value is dropped.
 ///
 /// Files that were renamed already are gone, so removing them fails silently.
@@ -491,6 +531,7 @@ fn publish(
 /// manifest files are written next to it, the manifest last.
 pub fn extract_situations(source: &Path, output: &Path, options: &Options) -> Result<()> {
     let paths = paths_for(output).map_err(|msg| ExtractError::new("usage", msg))?;
+    check_not_source(source, output).map_err(|msg| ExtractError::new("usage", msg))?;
     if !options.overwrite {
         check_absent(&paths)?;
     }

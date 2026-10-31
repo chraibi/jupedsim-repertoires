@@ -66,7 +66,7 @@ uv run python docs/scorecard.py cfsm-v2 docs/scorecards/v2_cfsm-v2.json --data 2
 cameras 5 and 6). A run that reaches the 300 s limit before everyone has
 left is marked `"completed": false`, with the agents still inside and the
 entries not yet added.
-Each run writes a JSON Lines log next to its card (about 600 MB per run);
+Each run writes a JSON Lines log next to its card (about 40 MB per 2C120 run, about 600 MB with `--diagnostic`);
 logs are not committed.
 
 ## Extracting situations

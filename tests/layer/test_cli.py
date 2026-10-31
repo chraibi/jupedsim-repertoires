@@ -63,6 +63,18 @@ def test_usage_errors_exit_2_and_write_nothing(tmp_path, args):
     assert list(tmp_path.iterdir()) == []
 
 
+@pytest.mark.parametrize("name", ["run.jsonl", "run.labels.jsonl", "run.manifest.json"])
+def test_source_as_output_exits_2_and_keeps_source(tmp_path, name):
+    source = tmp_path / name
+    source.write_bytes((FIXTURES / "complete.jsonl").read_bytes())
+    before = source.read_bytes()
+    output = tmp_path / "run.jsonl"
+    with pytest.raises(SystemExit) as info:
+        extract(source, output, "--overwrite")
+    assert info.value.code == 2
+    assert source.read_bytes() == before
+
+
 def test_output_must_end_in_jsonl(tmp_path):
     with pytest.raises(SystemExit) as info:
         extract(FIXTURES / "complete.jsonl", tmp_path / "s.json")

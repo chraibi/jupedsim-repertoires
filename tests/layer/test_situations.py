@@ -275,3 +275,31 @@ def test_invalid_manifest_is_manifest_missing(out):
         with pytest.raises(ExtractError) as info:
             verify_export(out)
         assert info.value.category == "manifest-missing"
+
+
+@pytest.mark.parametrize("name", ["run.jsonl", "run.labels.jsonl", "run.manifest.json"])
+def test_source_as_output_is_refused(tmp_path, name):
+    source = tmp_path / name
+    source.write_bytes((FIXTURES / "complete.jsonl").read_bytes())
+    before = source.read_bytes()
+    with pytest.raises(ValueError, match="source run log"):
+        extract_situations(source, tmp_path / "run.jsonl", overwrite=True)
+    assert source.read_bytes() == before
+
+
+def test_hard_link_to_source_is_refused(tmp_path):
+    source = tmp_path / "src.jsonl"
+    source.write_bytes((FIXTURES / "complete.jsonl").read_bytes())
+    out = tmp_path / "out.jsonl"
+    out.hardlink_to(source)
+    with pytest.raises(ValueError, match="source run log"):
+        extract_situations(source, out, overwrite=True)
+
+
+@pytest.mark.parametrize(
+    ("sample", "seed"), [(0, 0), (-1, 0), (None, -1), (None, 2**64), (1, 2**64)]
+)
+def test_invalid_sample_or_seed_raises_before_io(tmp_path, out, sample, seed):
+    with pytest.raises(ValueError):
+        extract_situations(tmp_path / "missing.jsonl", out, sample=sample, seed=seed)
+    assert list(out.parent.iterdir()) == []

@@ -11,7 +11,7 @@ use std::process::ExitCode;
 use clap::error::ErrorKind;
 use clap::{CommandFactory, Parser};
 
-use extract::{extract_situations, check_output_path, Options};
+use extract::{check_not_source, check_output_path, extract_situations, Options};
 
 /// Export the decision requests of a run log as situations with labels.
 #[derive(Parser)]
@@ -40,6 +40,9 @@ struct Args {
 fn main() -> ExitCode {
     let args = Args::parse();
     if let Err(message) = check_output_path(&args.output) {
+        Args::command().error(ErrorKind::ValueValidation, message).exit();
+    }
+    if let Err(message) = check_not_source(&args.run, &args.output) {
         Args::command().error(ErrorKind::ValueValidation, message).exit();
     }
     let options = Options {
