@@ -114,7 +114,21 @@ def test_metadata_records_scenario(tmp_path):
     assert metadata["scenario"] == "2C120"
     assert metadata["n_agents"] == 3
     assert metadata["entrance"]["door_open_time"] == OPEN
+    assert metadata["desired_speeds"] == [0.8, 1.6]
     assert metadata["rules"] == dataclasses.asdict(RuleParameters())
+
+
+def test_agents_keep_their_drawn_desired_speeds(tmp_path):
+    sim, controller, inflow = build(tmp_path, entries())
+    step_until(sim, controller, inflow, 1.0)
+    speeds = [sim.agent(a).state.desired_speed for a in inflow.added.values()]
+    assert all(0.8 <= v <= 1.6 for v in speeds)
+    assert len(set(speeds)) == 3
+    again, controller, inflow = build(tmp_path, entries())
+    step_until(again, controller, inflow, 1.0)
+    assert [
+        again.agent(a).state.desired_speed for a in inflow.added.values()
+    ] == speeds
 
 
 def test_unsupported_model_is_rejected(tmp_path):

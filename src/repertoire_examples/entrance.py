@@ -36,7 +36,8 @@ class EntranceParameters:
         wait_slack: Distance beyond ``spacing`` up to which a standing
             agent keeps its place instead of closing up to the
             predecessor (m), or None to always close up.
-        queue_speed: Desired speed while queueing (m/s).
+        queue_speed: Desired speed while queueing (m/s), or None to keep
+            the agent's own desired speed.
         lateral_offset: Lateral distance of the passing point (m).
         wall_clearance: Distance kept from the walls by passing points (m).
         entry_free_radius: Radius around a passing point that must be
@@ -46,7 +47,8 @@ class EntranceParameters:
         lateral_reach: Distance at which the lateral point counts as
             reached (m).
         ahead_offset: Distance ahead of the passing target in phase 2 (m).
-        overtake_speed: Desired speed while overtaking (m/s).
+        overtake_speed: Desired speed while overtaking (m/s), or None to
+            keep the agent's own desired speed.
         complete_margin: Progress margin past the target that completes
             an overtake (m).
         abandon_span: Time span of the stall check (s).
@@ -64,14 +66,14 @@ class EntranceParameters:
     spacing: float = 0.7
     standing_tol: float = 0.15
     wait_slack: float | None = None
-    queue_speed: float = 1.0
+    queue_speed: float | None = 1.0
     lateral_offset: float = 0.8
     wall_clearance: float = 0.25
     entry_free_radius: float = 0.6
     continuation_free_radius: float = 0.4
     lateral_reach: float = 0.3
     ahead_offset: float = 0.8
-    overtake_speed: float = 1.4
+    overtake_speed: float | None = 1.4
     complete_margin: float = 0.3
     abandon_span: float = 2.0
     abandon_progress: float = 0.1

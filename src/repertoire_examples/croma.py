@@ -71,21 +71,25 @@ _EXIT = shapely.box(-0.3, 19.65, 0.26, 19.95)
 
 FPS = 50
 DOOR_OPEN_TIME = 90.5
-# Desired speeds follow the median of the people's 90th-percentile speeds
-# over the first 20 s, 2.5 m/s, with the default ratio of overtaking to
-# queueing speed. The exit speed is the median speed of the people in
-# the doorway (y from 20 to 20.8 m) after the door opens, 0.8 m/s.
+# Each agent keeps its own desired speed, drawn uniformly from
+# DESIRED_SPEEDS, while queueing and overtaking; the run-in of the people
+# at the start of the experiment is not modelled. The exit speed is the
+# median speed of the people in the doorway (y from 20 to 20.8 m) after
+# the door opens, 0.8 m/s.
 # Waiting agents keep their place until the gap to the predecessor
 # exceeds the spacing by 0.4 m; this value brings the movement while the
 # door is closed close to that of the people.
 ENTRANCE = EntranceParameters(
     entrance=(-0.02, 19.6),
-    queue_speed=2.5,
-    overtake_speed=3.5,
+    queue_speed=None,
+    overtake_speed=None,
     door_open_time=DOOR_OPEN_TIME,
     exit_speed=0.8,
     wait_slack=0.4,
 )
+
+# Range of the agents' desired speeds (m/s): 1.2 +- 0.4.
+DESIRED_SPEEDS = (0.8, 1.6)
 
 # Minimum distance to other agents at which an entering agent is added.
 _ENTRY_CLEARANCE = 0.4
@@ -144,7 +148,11 @@ def load_entries(path: pathlib.Path, fps: int = FPS) -> list[Entry]:
 
 
 class Inflow:
-    """Adds agents at their entry times, once their position is free."""
+    """Adds agents at their entry times, once their position is free.
+
+    ``speeds`` maps person ids to the desired speeds of their agents;
+    agents of other persons get the model's default.
+    """
 
     def __init__(
         self,
@@ -153,9 +161,11 @@ class Inflow:
         journey_id: int,
         stage_id: int,
         region_id: int,
+        speeds: dict[int, float] | None = None,
     ):
         self._pending = list(entries)
         self._state_type = state_type
+        self._speeds = speeds or {}
         self._journey_id = journey_id
         self._stage_id = stage_id
         self._region_id = region_id
@@ -186,6 +196,12 @@ class Inflow:
     def _is_free(self, sim: jps.Simulation, entry: Entry) -> bool:
         return not sim.agents_in_range(entry.position, _ENTRY_CLEARANCE)
 
+    def _state(self, entry: Entry):
+        speed = self._speeds.get(entry.person_id)
+        if speed is None:
+            return self._state_type()
+        return self._state_type(desired_speed=speed)
+
     def _add(
         self,
         sim: jps.Simulation,
@@ -196,7 +212,7 @@ class Inflow:
             journey_id=self._journey_id,
             stage_id=self._stage_id,
             position=entry.position,
-            state=self._state_type(),
+            state=self._state(entry),
             region_id=self._region_id,
         )
         controller.add(agent_id, Queueing.name)
@@ -214,6 +230,8 @@ def build_2c120(
     decision_period: float = 2.0,
     trajectory_path: pathlib.Path | None = None,
     every_nth_frame: int = 10,
+    desired_speeds: tuple[float, float] | None = DESIRED_SPEEDS,
+    speed_seed: int = 0,
 ) -> tuple[jps.Simulation, RepertoireController, Inflow]:
     """Build the 2C120 scenario with no agent yet in the corridor.
 
@@ -229,6 +247,9 @@ def build_2c120(
         trajectory_path: HDF5 trajectory file to write, or None for none;
             closed by :func:`run_2c120`.
         every_nth_frame: Iterations between recorded trajectory frames.
+        desired_speeds: Range from which each agent's desired speed is
+            drawn uniformly (m/s), or None for the model's default.
+        speed_seed: Seed of the desired speed draws.
 
     Returns:
         The simulation, the controller and the inflow that adds agents.
@@ -263,6 +284,8 @@ def build_2c120(
             "n_agents": len(entries),
             "model": type(model).__name__,
             "entrance": dataclasses.asdict(entrance),
+            "desired_speeds": desired_speeds,
+            "speed_seed": speed_seed,
             "control_interval": control_interval,
             "decision_period": decision_period,
             "jupedsim_version": jps.__version__,
@@ -294,11 +317,28 @@ def build_2c120(
         decision_period=decision_period,
         capabilities=model_capabilities(state_type()),
     )
-    inflow = Inflow(entries, state_type, steering_journey, steering, region)
+    inflow = Inflow(
+        entries,
+        state_type,
+        steering_journey,
+        steering,
+        region,
+        _draw_speeds(entries, desired_speeds, speed_seed),
+    )
     _LOGS[controller] = log
     if writer is not None:
         _WRITERS[controller] = writer
     return sim, controller, inflow
+
+
+def _draw_speeds(
+    entries: list[Entry], speeds: tuple[float, float] | None, seed: int
+) -> dict[int, float]:
+    if speeds is None:
+        return {}
+    rng = np.random.default_rng(seed)
+    ids = sorted(e.person_id for e in entries)
+    return dict(zip(ids, rng.uniform(*speeds, size=len(ids)).tolist()))
 
 
 def run_2c120(
