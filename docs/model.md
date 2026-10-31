@@ -349,6 +349,36 @@ Open points:
 - The rule-based selector can be replaced by another selector (for example
   one estimating a Jev-like value) without changing the repertoires.
 
+# What the layer uses from JuPedSim
+
+The layer reaches JuPedSim in two files and only through its public Python
+API. State, memory, selectors, decision scheduling and logs do not use
+JuPedSim.
+
+| Where | JuPedSim call | Used for |
+|---|---|---|
+| `perception.py` | `sim.agent(id).position` | Own position |
+| `perception.py` | `sim.agents_in_range(position, radius)` | Agents within the perception radius |
+| `controller.py` | `agent.journey_id`, `agent.stage_id` | Check that an added agent is at the direct steering stage |
+| `controller.py` | `sim.elapsed_time()` | Time of observations and decisions |
+| `controller.py` | `sim.iterate(n)` | Advance the movement between control steps |
+| `controller.py` | `sim.agents()` | Detect agents that have left the simulation |
+| `controller.py` | `agent.state` (has `desired_speed`?) | Capabilities of the operational model |
+| `controller.py` | `agent.state.desired_speed` | Speed set by a repertoire |
+| `controller.py` | `agent.final_target` | Target set by a repertoire |
+| `controller.py` | `sim.switch_agent_journey(...)` | Handoff to the exit journey |
+
+The scenario additionally builds the geometry, the journeys with a direct
+steering stage, and the agents with JuPedSim.
+
+`agent.state` and WarpDriver are only on JuPedSim master, so the
+dependency is pinned to a master commit. No separate adapter layer exists:
+with one simulator and this few calls, it would add an interface without a
+second implementation. It becomes worth it if a second simulator is
+supported, or if JuPedSim's API changes in more than these places. A
+capability missing here goes upstream into JuPedSim; behavioural
+assumptions stay in this repository.
+
 # Reference
 
 Sieben, A. and Postmes, T. (2025). Behavioural repertoires in moving
