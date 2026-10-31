@@ -27,19 +27,51 @@ def make_request():
     return DecisionRequest(7, (1,), 2.0, 0, (obs,), (state,), ("start",))
 
 
-def test_first_record_is_metadata(tmp_path):
+def test_first_record_is_metadata(tmp_path, monkeypatch):
+    monkeypatch.setattr(
+        "jupedsim_repertoires.provenance.code_revision", lambda: "abc"
+    )
     path = tmp_path / "run.jsonl"
     with RunLog(path, {"seed": 3, "selector": "fixed"}):
         pass
     first = json.loads(path.read_text().splitlines()[0])
-    assert first == {"type": "metadata", "seed": 3, "selector": "fixed"}
+    assert first == {
+        "type": "metadata",
+        "seed": 3,
+        "selector": "fixed",
+        "diagnostic": False,
+        "code_revision": "abc",
+        "input_checksum": None,
+    }
 
 
-def test_metadata_with_type_key_rejected(tmp_path):
+@pytest.mark.parametrize(
+    "key", ["type", "diagnostic", "code_revision", "input_checksum"]
+)
+def test_reserved_metadata_keys_rejected(tmp_path, key):
     path = tmp_path / "run.jsonl"
-    with pytest.raises(ValueError, match="type"):
-        RunLog(path, {"type": "other"})
+    with pytest.raises(ValueError, match=key):
+        RunLog(path, {key: "other"})
     assert not path.exists()
+
+
+def test_observations_written_only_in_diagnostic_mode(tmp_path):
+    obs = make_request().observations[0]
+    counts = {}
+    for diagnostic in (False, True):
+        path = tmp_path / f"{diagnostic}.jsonl"
+        with RunLog(path, {}, diagnostic=diagnostic) as log:
+            log.observation(obs)
+        counts[diagnostic] = sum(
+            r["type"] == "observation" for r in load_records(path)
+        )
+    assert counts == {False: 0, True: 1}
+
+
+def test_nan_is_rejected_at_write_time(tmp_path):
+    with RunLog(tmp_path / "run.jsonl", {}) as log:
+        with pytest.raises(ValueError):
+            log.diagnostic(0.0, "k", {"x": float("nan")})
 
 
 def test_transitions_by_agent_groups_and_sorts(tmp_path):
@@ -57,7 +89,7 @@ def test_transitions_by_agent_groups_and_sorts(tmp_path):
 def test_requests_and_responses_round_trip(tmp_path):
     path = tmp_path / "run.jsonl"
     req = make_request()
-    with RunLog(path, {}) as log:
+    with RunLog(path, {}, diagnostic=True) as log:
         log.observation(req.observations[0])
         log.request(req)
         log.response(Decision(7, ("a",)), 4, 2.0, unit_index=3)

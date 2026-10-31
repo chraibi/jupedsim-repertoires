@@ -6,10 +6,18 @@ import pathlib
 from collections.abc import Mapping
 from typing import Any
 
+from jupedsim_repertoires import provenance
 from jupedsim_repertoires.types import (
     Decision,
     DecisionRequest,
     Observation,
+)
+
+_RESERVED_METADATA_KEYS = (
+    "type",
+    "diagnostic",
+    "code_revision",
+    "input_checksum",
 )
 
 
@@ -18,32 +26,55 @@ class RunLog:
 
     The first line is a ``metadata`` record. Every further line is one
     record with a ``type`` key. Keys are sorted so that identical runs
-    produce identical files.
+    produce identical files. Observations are written only in diagnostic
+    mode.
     """
 
-    def __init__(self, path: pathlib.Path, metadata: Mapping[str, Any]):
+    def __init__(
+        self,
+        path: pathlib.Path,
+        metadata: Mapping[str, Any],
+        *,
+        diagnostic: bool = False,
+        input_checksum: str | None = None,
+    ):
         """Open the log and write the metadata record.
 
         Args:
             path: File to write.
             metadata: Selector name and config, backend/model version,
                 seed and parameters of the run.
+            diagnostic: Whether observations are written.
+            input_checksum: SHA-256 of the run's input file, if any.
 
         Raises:
-            ValueError: If ``metadata`` contains the reserved key
-                ``"type"``.
+            ValueError: If ``metadata`` contains a reserved key
+                (``type``, ``diagnostic``, ``code_revision`` or
+                ``input_checksum``).
         """
-        if "type" in metadata:
-            raise ValueError('metadata must not contain the key "type"')
+        for key in _RESERVED_METADATA_KEYS:
+            if key in metadata:
+                raise ValueError(f'metadata must not contain the key "{key}"')
+        self._diagnostic = diagnostic
         self._file = open(path, "w", encoding="utf-8")
         self._last_execution: dict[int, tuple[str, str]] = {}
-        self._write({"type": "metadata", **metadata})
+        self._write(
+            {
+                "type": "metadata",
+                **metadata,
+                "diagnostic": diagnostic,
+                "code_revision": provenance.code_revision(),
+                "input_checksum": input_checksum,
+            }
+        )
 
     def _write(self, record: Mapping[str, Any]) -> None:
-        self._file.write(json.dumps(record, sort_keys=True) + "\n")
+        self._file.write(json.dumps(record, sort_keys=True, allow_nan=False) + "\n")
 
     def observation(self, obs: Observation) -> None:
-        """Log one agent observation."""
+        """Log one agent observation; written only in diagnostic mode."""
+        if not self._diagnostic:
+            return
         self._write({"type": "observation", **dataclasses.asdict(obs)})
 
     def request(self, req: DecisionRequest) -> None:
