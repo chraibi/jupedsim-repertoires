@@ -58,11 +58,14 @@ cd docs/slides && npm ci && npx slidev build --base /jupedsim-repertoires/
 ## Reproducing the scorecards
 
 ```sh
-uv run python docs/scorecard.py experiment docs/scorecards/experiment.json
-uv run python docs/scorecard.py cfsm-v2 docs/scorecards/v2_cfsm-v2.json --seeds 5
+uv run python docs/scorecard.py experiment docs/scorecards/experiment.json --data 2C120.txt
+uv run python docs/scorecard.py cfsm-v2 docs/scorecards/v2_cfsm-v2.json --data 2C120.txt --seeds 5
 ```
 
-The trajectory file of 2C120 is read from the path in `docs/scorecard.py`.
+`--data` is the PeTrack trajectory file of 2C120 (the combined file of
+cameras 5 and 6). A run that reaches the 300 s limit before everyone has
+left is marked `"completed": false`, with the agents still inside and the
+entries not yet added.
 Each run writes a JSON Lines log next to its card (about 600 MB per run);
 logs are not committed.
 

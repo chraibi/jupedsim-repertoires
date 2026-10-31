@@ -7,14 +7,17 @@ Runs 2C120 with the rule selector and writes one JSON file with:
 - outflow after the door opens: removal times of the 25th, 50th and 75th
   person and of the last one, and the largest difference in the number
   of people out compared with the experiment;
+- completion: agents still inside and entries not yet added when the run
+  stopped; a run with either is marked incomplete and its missing
+  removal times are null;
 - event counts from the run log.
 
 The same smoothing (1 s moving average of positions sampled every 0.1 s)
 is applied to the simulation and to the head trajectories of the people.
 
 Usage:
-    scorecard.py experiment OUT.json
-    scorecard.py MODEL OUT.json [--wait-slack none|VALUE]
+    scorecard.py experiment OUT.json [--data FILE]
+    scorecard.py MODEL OUT.json [--data FILE] [--wait-slack none|VALUE]
         [--queue-speed V --overtake-speed V] [--desired-speeds none|LO,HI]
         [--seeds N]
 
@@ -85,13 +88,13 @@ def movement(tracks, entrance):
     }
 
 
-def outflow(times, reference=None):
+def outflow(times, reference=None, complete=True):
     times = np.sort(times)
     out = {
-        "person_25": round(times[24], 1),
-        "person_50": round(times[49], 1),
-        "person_75": round(times[74], 1),
-        "last": round(times[-1], 1),
+        "person_25": nth(times, 25),
+        "person_50": nth(times, 50),
+        "person_75": nth(times, 75),
+        "last": round(times[-1], 1) if complete else None,
     }
     if reference is not None:
         grid = np.arange(DOOR_OPEN_TIME, 250, 0.1)
@@ -101,8 +104,13 @@ def outflow(times, reference=None):
     return out
 
 
-def experiment():
-    d = np.loadtxt(DATA, comments="#")
+def nth(times, n):
+    """Removal time of the n-th person, None if fewer were removed."""
+    return round(times[n - 1], 1) if len(times) >= n else None
+
+
+def experiment(data=DATA):
+    d = np.loadtxt(data, comments="#")
     d = d[d[:, 1] % 5 == 0]
     # Simulation time starts at the first recorded frame, as in load_entries.
     t = (d[:, 1] - d[:, 1].min()) / 50
@@ -119,10 +127,13 @@ def experiment():
     return tracks, np.array(crossings)
 
 
-def simulate(model, entrance, log_path, desired_speeds=DESIRED_SPEEDS, seed=0):
+def simulate(
+    model, entrance, log_path, desired_speeds=DESIRED_SPEEDS, seed=0, data=DATA
+):
+    """Run 2C120; removal times hold only agents that actually left."""
     sim, ctrl, inflow = build_2c120(
         MODELS[model](),
-        entries=load_entries(DATA),
+        entries=load_entries(data),
         selector=EntranceRuleSelector(RuleParameters(), entrance, corridor()),
         log_path=log_path,
         entrance=entrance,
@@ -145,7 +156,6 @@ def simulate(model, entrance, log_path, desired_speeds=DESIRED_SPEEDS, seed=0):
 
     ctrl.step = record
     run_2c120(sim, ctrl, inflow, 300.0)
-    removed.extend([sim.elapsed_time()] * len(alive))
     tracks = {i: np.array(p) for i, p in tracks.items()}
     return tracks, np.array(removed), dict(inflow.added)
 
@@ -165,18 +175,24 @@ def run(args, entrance, speeds, seed, crossings):
     log = args.out.with_suffix(".jsonl")
     if args.seeds > 1:
         log = args.out.with_suffix(f".seed{seed}.jsonl")
-    tracks, removed, _ = simulate(args.model, entrance, log, speeds, seed)
+    tracks, removed, added = simulate(
+        args.model, entrance, log, speeds, seed, args.data
+    )
     card = {"seed": seed}
     card |= movement(tracks, np.array(entrance.entrance))
-    card |= outflow(removed, crossings)
+    card["remaining"] = len(added) - len(removed)
+    card["pending"] = len(load_entries(args.data)) - len(added)
+    card["completed"] = card["remaining"] == 0 and card["pending"] == 0
+    card |= outflow(removed, crossings, card["completed"])
     card["events"] = events(log)
     return card
 
 
 def median(runs):
     """Median of every number over the runs, with the runs themselves."""
-    keys = [k for k in runs[0] if k not in ("seed", "events")]
-    card = {k: round(float(np.median([r[k] for r in runs])), 2) for k in keys}
+    keys = [k for k in runs[0] if k not in ("seed", "events", "completed")]
+    card = {k: median_of([r[k] for r in runs]) for k in keys}
+    card["completed"] = all(r["completed"] for r in runs)
     causes = sorted({c for r in runs for c in r["events"]})
     card["events"] = {
         c: float(np.median([r["events"].get(c, 0) for r in runs])) for c in causes
@@ -184,10 +200,20 @@ def median(runs):
     return card | {"seeds": len(runs), "per_seed": runs}
 
 
+def median_of(values):
+    """Median rounded to 0.01, None if any run lacks the value."""
+    if None in values:
+        return None
+    return round(float(np.median(values)), 2)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("model", choices=["experiment", *MODELS])
     parser.add_argument("out", type=pathlib.Path)
+    parser.add_argument(
+        "--data", type=pathlib.Path, default=DATA, help="2C120 PeTrack file"
+    )
     parser.add_argument("--wait-slack", default=None)
     parser.add_argument("--queue-speed", type=float, default=None)
     parser.add_argument("--overtake-speed", type=float, default=None)
@@ -209,7 +235,7 @@ def main():
         speeds = None
     elif args.desired_speeds is not None:
         speeds = tuple(float(v) for v in args.desired_speeds.split(","))
-    tracks, crossings = experiment()
+    tracks, crossings = experiment(args.data)
     card = {"model": args.model}
     if args.model == "experiment":
         card |= movement(tracks, np.array(ENTRANCE.entrance))
