@@ -231,3 +231,43 @@ def test_overwrite_with_invalid_source_keeps_export(out):
         extract_situations(FIXTURES / "not_json.jsonl", out, overwrite=True)
     assert [p.read_bytes() for p in paths] == before
     assert tmp_files(out.parent) == []
+
+
+def _log_with(tmp_path, mutate) -> pathlib.Path:
+    lines = (FIXTURES / "complete.jsonl").read_text().splitlines()
+    source = tmp_path / "mutated.jsonl"
+    source.write_text("\n".join(mutate(lines)) + "\n")
+    return source
+
+
+@pytest.mark.parametrize("sample", [None, 1])
+def test_bad_response_rejected_regardless_of_sampling(tmp_path, out, sample):
+    def drop_repertoires(lines):
+        record = json.loads(lines[6])
+        del record["repertoires"]
+        return lines[:6] + [json.dumps(record)] + lines[7:]
+
+    source = _log_with(tmp_path, drop_repertoires)
+    with pytest.raises(ExtractError) as info:
+        extract_situations(source, out, sample=sample, seed=0)
+    assert info.value.category == "not-json"
+    assert "line 7" in str(info.value)
+
+
+def test_boolean_key_is_not_json(tmp_path, out):
+    source = _log_with(
+        tmp_path, lambda lines: [lines[0], lines[1].replace('"unit_index": 0', '"unit_index": true')]
+    )
+    with pytest.raises(ExtractError) as info:
+        extract_situations(source, out)
+    assert info.value.category == "not-json"
+
+
+def test_invalid_manifest_is_manifest_missing(out):
+    extract_situations(FIXTURES / "complete.jsonl", out)
+    manifest_path = output_paths(out)[2]
+    for text in ["{", "{}", "[]"]:
+        manifest_path.write_text(text)
+        with pytest.raises(ExtractError) as info:
+            verify_export(out)
+        assert info.value.category == "manifest-missing"

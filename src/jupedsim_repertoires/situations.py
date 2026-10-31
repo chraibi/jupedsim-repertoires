@@ -77,9 +77,13 @@ def _parse(number: int, line: bytes) -> dict:
     return record
 
 
+def _is_int(value: Any) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool)
+
+
 def _key(number: int, record: dict) -> Key:
     unit, decision = record.get("unit_index"), record.get("decision_index")
-    if not isinstance(unit, int) or not isinstance(decision, int):
+    if not _is_int(unit) or not _is_int(decision):
         raise ExtractError(
             "not-json", f"line {number}: unit_index and decision_index must be integers"
         )
@@ -110,6 +114,7 @@ def _add_request(scan: _Scan, number: int, record: dict) -> None:
 
 def _add_response(scan: _Scan, number: int, record: dict) -> None:
     key = _key(number, record)
+    _decision(number, record)
     if key in scan.responses:
         raise ExtractError("duplicate-response", f"line {number}: duplicate response {key}")
     scan.responses[key] = number
@@ -150,8 +155,8 @@ def _check_unchanged(source: pathlib.Path, scan: _Scan) -> None:
 
 
 def _decision(number: int, record: dict) -> dict:
-    if "repertoires" not in record:
-        raise ExtractError("not-json", f"line {number}: response lacks repertoires")
+    if not isinstance(record.get("repertoires"), list):
+        raise ExtractError("not-json", f"line {number}: response lacks a repertoires list")
     return {"repertoires": record["repertoires"], "reasons": record.get("reasons", [])}
 
 
@@ -297,7 +302,7 @@ def _manifest(
 
 def _publish_manifest(path: pathlib.Path, manifest: dict[str, Any]) -> None:
     """Write the manifest through a temporary file and rename it."""
-    text = json.dumps(manifest, indent=2, sort_keys=True) + "\n"
+    text = json.dumps(manifest, indent=2, sort_keys=True, allow_nan=False) + "\n"
     handle = tempfile.NamedTemporaryFile(
         "w", dir=path.parent, suffix=".tmp", delete=False, encoding="utf-8", newline="\n"
     )
@@ -318,6 +323,8 @@ def _publish(
 ) -> None:
     if overwrite:
         paths[2].unlink(missing_ok=True)
+    else:
+        _check_absent(paths)
     os.replace(temps[0], paths[0])
     os.replace(temps[1], paths[1])
     _publish_manifest(paths[2], manifest)
@@ -372,6 +379,17 @@ def _check_entry(name: str, path: pathlib.Path, entry: dict[str, Any]) -> None:
         raise ExtractError("checksum-mismatch", f"{name} file {path} does not match the manifest")
 
 
+def _read_manifest(path: pathlib.Path) -> dict[str, Any]:
+    try:
+        manifest = json.loads(path.read_text(encoding="utf-8"))
+        for name in ("situations", "labels"):
+            entry = manifest["outputs"][name]
+            entry["sha256"], entry["bytes"]
+    except (ValueError, KeyError, TypeError) as err:
+        raise ExtractError("manifest-missing", f"{path} is not a valid manifest: {err}") from err
+    return manifest
+
+
 def verify_export(output: pathlib.Path) -> dict[str, Any]:
     """Check that an export is complete and matches its manifest.
 
@@ -385,7 +403,7 @@ def verify_export(output: pathlib.Path) -> dict[str, Any]:
     sit_path, lab_path, manifest_path = output_paths(output)
     if not manifest_path.is_file():
         raise ExtractError("manifest-missing", f"{manifest_path} is missing; the export is incomplete")
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest = _read_manifest(manifest_path)
     _check_entry("situations", sit_path, manifest["outputs"]["situations"])
     _check_entry("labels", lab_path, manifest["outputs"]["labels"])
     return manifest
