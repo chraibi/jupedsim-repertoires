@@ -359,7 +359,7 @@ def run_2c120(
 
     ``observe``, if given, is called as ``observe(sim, controller)`` once
     per iteration, after due agents are admitted and before the
-    controller steps. Agents removed by the last step are not observed.
+    controller steps, and once more after the last step.
     """
     try:
         while _active(sim, inflow) and sim.elapsed_time() < max_time:
@@ -367,6 +367,8 @@ def run_2c120(
             if observe is not None:
                 observe(sim, controller)
             controller.step()
+        if observe is not None:
+            observe(sim, controller)
     finally:
         _close(_LOGS.pop(controller, None))
         _close(_WRITERS.pop(controller, None))

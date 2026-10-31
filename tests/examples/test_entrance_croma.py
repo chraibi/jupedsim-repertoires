@@ -119,7 +119,7 @@ def test_observe_sees_admitted_agents_before_each_step(tmp_path):
     run_2c120(sim, controller, inflow, 1.0, observe=observe)
     assert controller.step == step
     assert seen[0] == (0, sorted(inflow.added.values())[:2])
-    assert [n for n, _ in seen] == list(range(0, sim.iteration_count(), 10))
+    assert [n for n, _ in seen] == list(range(0, sim.iteration_count() + 1, 10))
 
 
 def test_metadata_records_scenario(tmp_path):
