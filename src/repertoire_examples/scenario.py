@@ -41,6 +41,7 @@ _DT = 0.01
 
 _STATE_TYPES = {
     jps.CollisionFreeSpeedModel: jps.CollisionFreeSpeedModelState,
+    jps.CollisionFreeSpeedModelV2: jps.CollisionFreeSpeedModelV2State,
     jps.CollisionFreeSpeedModelV3: jps.CollisionFreeSpeedModelV3State,
     jps.WarpDriverModel: jps.WarpDriverModelState,
 }

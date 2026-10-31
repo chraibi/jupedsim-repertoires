@@ -23,6 +23,7 @@ from jupedsim_examples.repertoires.croma import (
 
 MODELS = {
     "cfsm": jps.CollisionFreeSpeedModel,
+    "cfsm-v2": jps.CollisionFreeSpeedModelV2,
     "cfsm-v3": jps.CollisionFreeSpeedModelV3,
     "warpdriver": jps.WarpDriverModel,
 }
