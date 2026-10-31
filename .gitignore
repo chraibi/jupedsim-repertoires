@@ -221,6 +221,7 @@ __marimo__/
 
 # Project
 *.jsonl
+!tests/fixtures/**/*.jsonl
 docs/slides/node_modules/
 docs/slides/dist/
 .DS_Store

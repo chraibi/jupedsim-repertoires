@@ -1,0 +1,10 @@
+{"scenario": "fixture", "type": "metadata"}
+{"decision_index": 0, "events": [], "members": [1], "observations": [{"agent_id": 1, "distance": 1.5}], "snapshot_time": 0.0, "states": [{"commitment_since": 0.0, "repertoire": "queueing"}], "type": "request", "unit_id": 1, "unit_index": 0}
+{"decision_index": 0, "reasons": ["fixture"], "repertoires": ["queueing"], "snapshot_time": 0.0, "type": "response", "unit_id": 1, "unit_index": 0}
+{"decision_index": 0, "events": [], "members": [2], "observations": [{"agent_id": 2, "distance": 1.5}], "snapshot_time": 0.0, "states": [{"commitment_since": 0.0, "repertoire": "queueing"}], "type": "request", "unit_id": 2, "unit_index": 1}
+{"decision_index": 0, "reasons": ["fixture"], "repertoires": ["queueing"], "snapshot_time": 0.0, "type": "response", "unit_id": 2, "unit_index": 1}
+{"decision_index": 1, "events": [], "members": [1], "observations": [{"agent_id": 1, "distance": 1.5}], "snapshot_time": 1.0, "states": [{"commitment_since": 0.0, "repertoire": "queueing"}], "type": "request", "unit_id": 1, "unit_index": 0}
+{"decision_index": 1, "reasons": ["fixture"], "repertoires": ["queueing"], "snapshot_time": 1.0, "type": "response", "unit_id": 1, "unit_index": 0}
+{"agent_id": 1, "time": 0.0, "type": "observation"}
+{"after": "queueing", "agent_id": 1, "before": "walking", "cause": "fixture", "group_id": null, "time": 0.0, "type": "transition", "unit_id": 1}
+{"decision_index": 0, "events": [], "members": [1], "observations": [{"agent_id": 1, "distance": 1.5}], "snapshot_time": 0.0, "states": [{"commitment_since": 0.0, "repertoire": "queueing"}], "type": "request", "unit_id": 1, "unit_index": 0}
