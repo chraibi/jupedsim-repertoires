@@ -1,0 +1,11 @@
+[package]
+name = "extract-situations"
+version = "0.1.0"
+edition = "2021"
+description = "Export the decision requests of a run log as situations with labels"
+license = "LGPL-3.0-or-later"
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
