@@ -24,6 +24,12 @@ decide whether it moves into JuPedSim or stays a companion package.
 Behavioural hypotheses stay here. Missing general simulation capabilities
 go upstream into JuPedSim.
 
+![Module dependencies](docs/figures/dependencies.svg)
+
+Only the scenarios import `jupedsim`. The layer calls the simulation object
+it is given; the calls are listed in `docs/model.md`. The source of the
+figure is `docs/figures/dependencies.html`.
+
 ## Setup
 
 ```sh
