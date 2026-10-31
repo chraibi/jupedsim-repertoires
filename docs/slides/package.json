@@ -1,0 +1,20 @@
+{
+  "name": "repertoire-slides",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "slidev",
+    "build": "slidev build",
+    "export": "slidev export"
+  },
+  "dependencies": {
+    "@slidev/cli": "^53.0.0",
+    "@slidev/theme-default": "latest"
+  },
+  "overrides": {
+    "tslib": "2.8.1"
+  },
+  "devDependencies": {
+    "playwright-chromium": "^1.64.1"
+  }
+}

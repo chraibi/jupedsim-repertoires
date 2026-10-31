@@ -1,0 +1,42 @@
+{
+  "model": "warpdriver",
+  "entrance": {
+    "entrance": [
+      -0.02,
+      19.6
+    ],
+    "ahead_margin": 0.2,
+    "spacing": 0.7,
+    "standing_tol": 0.15,
+    "wait_slack": null,
+    "queue_speed": 2.5,
+    "lateral_offset": 0.8,
+    "wall_clearance": 0.25,
+    "entry_free_radius": 0.6,
+    "continuation_free_radius": 0.4,
+    "lateral_reach": 0.3,
+    "ahead_offset": 0.8,
+    "overtake_speed": 3.5,
+    "complete_margin": 0.3,
+    "abandon_span": 2.0,
+    "abandon_progress": 0.1,
+    "handoff_radius": 1.0,
+    "door_open_time": 90.5,
+    "exit_speed": 0.8
+  },
+  "desired_speeds": null,
+  "people_waiting": 87,
+  "walked_m_per_min": 17.64,
+  "sideways_m_per_min": 13.9,
+  "moving_share": 0.68,
+  "person_25": 99.7,
+  "person_50": 110.4,
+  "person_75": 124.2,
+  "last": 134.1,
+  "max_count_difference": 38,
+  "events": {
+    "overtake_completed": 122,
+    "overtake_abandoned_no_gap": 41,
+    "overtake_abandoned_stalled": 6
+  }
+}

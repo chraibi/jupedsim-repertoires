@@ -1,0 +1,43 @@
+{
+  "model": "cfsm-v2",
+  "entrance": {
+    "entrance": [
+      -0.02,
+      19.6
+    ],
+    "ahead_margin": 0.2,
+    "spacing": 0.7,
+    "standing_tol": 0.15,
+    "wait_slack": 0.4,
+    "queue_speed": 2.5,
+    "lateral_offset": 0.8,
+    "wall_clearance": 0.25,
+    "entry_free_radius": 0.6,
+    "continuation_free_radius": 0.4,
+    "lateral_reach": 0.3,
+    "ahead_offset": 0.8,
+    "overtake_speed": 3.5,
+    "complete_margin": 0.3,
+    "abandon_span": 2.0,
+    "abandon_progress": 0.1,
+    "handoff_radius": 1.0,
+    "door_open_time": 90.5,
+    "exit_speed": 0.8
+  },
+  "desired_speeds": null,
+  "people_waiting": 87,
+  "walked_m_per_min": 0.83,
+  "sideways_m_per_min": 0.51,
+  "moving_share": 0.0,
+  "person_25": 114.1,
+  "person_50": 138.7,
+  "person_75": 164.0,
+  "last": 177.5,
+  "max_count_difference": 5,
+  "events": {
+    "overtake_abandoned_target_lost": 1,
+    "overtake_completed": 107,
+    "overtake_abandoned_no_gap": 35,
+    "overtake_abandoned_stalled": 28
+  }
+}

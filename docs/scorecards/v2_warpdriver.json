@@ -1,0 +1,133 @@
+{
+  "model": "warpdriver",
+  "entrance": {
+    "entrance": [
+      -0.02,
+      19.6
+    ],
+    "ahead_margin": 0.2,
+    "spacing": 0.7,
+    "standing_tol": 0.15,
+    "wait_slack": 0.4,
+    "queue_speed": null,
+    "lateral_offset": 0.8,
+    "wall_clearance": 0.25,
+    "entry_free_radius": 0.6,
+    "continuation_free_radius": 0.4,
+    "lateral_reach": 0.3,
+    "ahead_offset": 0.8,
+    "overtake_speed": null,
+    "complete_margin": 0.3,
+    "abandon_span": 2.0,
+    "abandon_progress": 0.1,
+    "handoff_radius": 1.0,
+    "door_open_time": 90.5,
+    "exit_speed": 0.8
+  },
+  "desired_speeds": [
+    0.8,
+    1.6
+  ],
+  "people_waiting": 87.0,
+  "walked_m_per_min": 4.77,
+  "sideways_m_per_min": 3.41,
+  "moving_share": 0.26,
+  "person_25": 109.9,
+  "person_50": 130.7,
+  "person_75": 154.1,
+  "last": 167.3,
+  "max_count_difference": 9.0,
+  "events": {
+    "overtake_abandoned_no_gap": 54.0,
+    "overtake_abandoned_stalled": 18.0,
+    "overtake_completed": 100.0
+  },
+  "seeds": 5,
+  "per_seed": [
+    {
+      "seed": 0,
+      "people_waiting": 87,
+      "walked_m_per_min": 5.49,
+      "sideways_m_per_min": 3.69,
+      "moving_share": 0.31,
+      "person_25": 108.3,
+      "person_50": 127.2,
+      "person_75": 147.0,
+      "last": 161.6,
+      "max_count_difference": 15,
+      "events": {
+        "overtake_completed": 72,
+        "overtake_abandoned_no_gap": 39,
+        "overtake_abandoned_stalled": 11
+      }
+    },
+    {
+      "seed": 1,
+      "people_waiting": 87,
+      "walked_m_per_min": 4.74,
+      "sideways_m_per_min": 3.22,
+      "moving_share": 0.26,
+      "person_25": 111.7,
+      "person_50": 131.9,
+      "person_75": 154.1,
+      "last": 168.0,
+      "max_count_difference": 8,
+      "events": {
+        "overtake_completed": 123,
+        "overtake_abandoned_stalled": 19,
+        "overtake_abandoned_no_gap": 75
+      }
+    },
+    {
+      "seed": 2,
+      "people_waiting": 87,
+      "walked_m_per_min": 4.12,
+      "sideways_m_per_min": 2.8,
+      "moving_share": 0.2,
+      "person_25": 109.9,
+      "person_50": 129.9,
+      "person_75": 152.4,
+      "last": 167.3,
+      "max_count_difference": 9,
+      "events": {
+        "overtake_abandoned_no_gap": 49,
+        "overtake_completed": 97,
+        "overtake_abandoned_stalled": 25
+      }
+    },
+    {
+      "seed": 3,
+      "people_waiting": 87,
+      "walked_m_per_min": 4.77,
+      "sideways_m_per_min": 3.41,
+      "moving_share": 0.23,
+      "person_25": 110.2,
+      "person_50": 131.5,
+      "person_75": 155.7,
+      "last": 168.3,
+      "max_count_difference": 7,
+      "events": {
+        "overtake_completed": 113,
+        "overtake_abandoned_no_gap": 55,
+        "overtake_abandoned_stalled": 18
+      }
+    },
+    {
+      "seed": 4,
+      "people_waiting": 87,
+      "walked_m_per_min": 5.55,
+      "sideways_m_per_min": 3.69,
+      "moving_share": 0.27,
+      "person_25": 109.7,
+      "person_50": 130.7,
+      "person_75": 154.3,
+      "last": 166.7,
+      "max_count_difference": 9,
+      "events": {
+        "overtake_abandoned_no_gap": 54,
+        "overtake_abandoned_stalled": 17,
+        "overtake_completed": 100
+      }
+    }
+  ]
+}

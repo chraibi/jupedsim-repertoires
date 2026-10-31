@@ -1,0 +1,139 @@
+{
+  "model": "cfsm-v2",
+  "entrance": {
+    "entrance": [
+      -0.02,
+      19.6
+    ],
+    "ahead_margin": 0.2,
+    "spacing": 0.7,
+    "standing_tol": 0.15,
+    "wait_slack": 0.4,
+    "queue_speed": null,
+    "lateral_offset": 0.8,
+    "wall_clearance": 0.25,
+    "entry_free_radius": 0.6,
+    "continuation_free_radius": 0.4,
+    "lateral_reach": 0.3,
+    "ahead_offset": 0.8,
+    "overtake_speed": null,
+    "complete_margin": 0.3,
+    "abandon_span": 2.0,
+    "abandon_progress": 0.1,
+    "handoff_radius": 1.0,
+    "door_open_time": 90.5,
+    "exit_speed": 0.8
+  },
+  "desired_speeds": [
+    0.8,
+    1.6
+  ],
+  "people_waiting": 87.0,
+  "walked_m_per_min": 2.15,
+  "sideways_m_per_min": 1.45,
+  "moving_share": 0.08,
+  "person_25": 114.9,
+  "person_50": 140.8,
+  "person_75": 167.0,
+  "last": 179.9,
+  "max_count_difference": 6.0,
+  "events": {
+    "overtake_abandoned_no_gap": 63.0,
+    "overtake_abandoned_stalled": 26.0,
+    "overtake_abandoned_target_lost": 2.0,
+    "overtake_completed": 90.0
+  },
+  "seeds": 5,
+  "per_seed": [
+    {
+      "seed": 0,
+      "people_waiting": 87,
+      "walked_m_per_min": 9.83,
+      "sideways_m_per_min": 5.67,
+      "moving_share": 0.39,
+      "person_25": 114.4,
+      "person_50": 139.7,
+      "person_75": 165.7,
+      "last": 178.4,
+      "max_count_difference": 6,
+      "events": {
+        "overtake_abandoned_target_lost": 5,
+        "overtake_abandoned_no_gap": 64,
+        "overtake_completed": 121,
+        "overtake_abandoned_stalled": 27
+      }
+    },
+    {
+      "seed": 1,
+      "people_waiting": 87,
+      "walked_m_per_min": 2.15,
+      "sideways_m_per_min": 1.45,
+      "moving_share": 0.08,
+      "person_25": 115.9,
+      "person_50": 141.9,
+      "person_75": 167.3,
+      "last": 179.9,
+      "max_count_difference": 8,
+      "events": {
+        "overtake_abandoned_target_lost": 2,
+        "overtake_abandoned_no_gap": 63,
+        "overtake_completed": 90,
+        "overtake_abandoned_stalled": 13
+      }
+    },
+    {
+      "seed": 2,
+      "people_waiting": 87,
+      "walked_m_per_min": 0.41,
+      "sideways_m_per_min": 0.22,
+      "moving_share": 0.0,
+      "person_25": 117.0,
+      "person_50": 143.6,
+      "person_75": 168.3,
+      "last": 181.7,
+      "max_count_difference": 9,
+      "events": {
+        "overtake_abandoned_no_gap": 48,
+        "overtake_completed": 81,
+        "overtake_abandoned_stalled": 23,
+        "overtake_abandoned_target_lost": 2
+      }
+    },
+    {
+      "seed": 3,
+      "people_waiting": 87,
+      "walked_m_per_min": 0.4,
+      "sideways_m_per_min": 0.26,
+      "moving_share": 0.0,
+      "person_25": 114.0,
+      "person_50": 140.8,
+      "person_75": 166.9,
+      "last": 181.3,
+      "max_count_difference": 6,
+      "events": {
+        "overtake_abandoned_target_lost": 4,
+        "overtake_abandoned_no_gap": 70,
+        "overtake_completed": 120,
+        "overtake_abandoned_stalled": 26
+      }
+    },
+    {
+      "seed": 4,
+      "people_waiting": 87,
+      "walked_m_per_min": 3.85,
+      "sideways_m_per_min": 2.5,
+      "moving_share": 0.22,
+      "person_25": 114.9,
+      "person_50": 140.7,
+      "person_75": 167.0,
+      "last": 179.6,
+      "max_count_difference": 6,
+      "events": {
+        "overtake_completed": 80,
+        "overtake_abandoned_no_gap": 47,
+        "overtake_abandoned_stalled": 31,
+        "overtake_abandoned_target_lost": 1
+      }
+    }
+  ]
+}

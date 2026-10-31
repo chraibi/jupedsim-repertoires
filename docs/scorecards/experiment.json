@@ -1,0 +1,11 @@
+{
+  "model": "experiment",
+  "people_waiting": 87,
+  "walked_m_per_min": 1.93,
+  "sideways_m_per_min": 1.11,
+  "moving_share": 0.05,
+  "person_25": 111.5,
+  "person_50": 134.6,
+  "person_75": 162.2,
+  "last": 176.3
+}
