@@ -46,6 +46,17 @@ newer. On macOS, use Apple clang:
 CC=/usr/bin/cc CXX=/usr/bin/c++ uv sync
 ```
 
+## A first run
+
+`scripts/repertoires_square.py` is the smallest complete run: a square
+room, agents placed in a box, one exit and a single repertoire that walks
+to it. Start prototyping there: change `Walk.control`, add repertoires and
+replace `FixedSelector` with a selector that chooses between them.
+
+```sh
+uv run python scripts/repertoires_square.py
+```
+
 ## Slides
 
 The talk lives in `docs/slides` (Slidev) and is published from the
