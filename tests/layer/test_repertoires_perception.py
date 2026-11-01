@@ -11,6 +11,7 @@ from jupedsim_repertoires.perception import (
     passes_since,
     progress_gained,
 )
+from jupedsim_repertoires.simulation import JuPedSimAdapter
 from jupedsim_repertoires.types import Memory, PerceivedAgent
 
 
@@ -108,7 +109,7 @@ def test_view_cone_excludes_agents_behind():
         heading=lambda pos: (1.0, 0.0),
     )
     mem = Memory((), (), False)
-    obs = perception.observe(sim, ids[0], 0.0, mem)
+    obs = perception.observe(JuPedSimAdapter(sim), ids[0], 0.0, mem)
     assert [p.id for p in obs.perceived] == [ids[2]]
     assert obs.progress == pytest.approx(5.0)
     assert obs.perceived[0].progress == pytest.approx(6.0)
@@ -139,9 +140,9 @@ def test_tracked_agent_is_perceived_outside_view_cone():
         heading=lambda pos: (1.0, 0.0),
     )
     mem = Memory((), (), False)
-    obs = perception.observe(sim, own, 0.0, mem, tracked=tracked)
+    obs = perception.observe(JuPedSimAdapter(sim), own, 0.0, mem, tracked=tracked)
     assert [p.id for p in obs.perceived] == [tracked]
-    assert perception.observe(sim, own, 0.0, mem).perceived == ()
-    beyond = perception.observe(sim, own, 0.0, mem, tracked=far)
+    assert perception.observe(JuPedSimAdapter(sim), own, 0.0, mem).perceived == ()
+    beyond = perception.observe(JuPedSimAdapter(sim), own, 0.0, mem, tracked=far)
     assert beyond.perceived == ()
     assert other not in [p.id for p in obs.perceived]

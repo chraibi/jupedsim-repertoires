@@ -15,6 +15,7 @@ from jupedsim_repertoires import (
 )
 from jupedsim_repertoires.log import RunLog, load_records
 from jupedsim_repertoires.perception import MemoryTracker, Perception
+from jupedsim_repertoires.simulation import JuPedSimAdapter
 
 ROOM = shapely.box(0, 0, 10, 10)
 BOTH = frozenset({Capability.TARGET_CONTROL, Capability.DESIRED_SPEED})
@@ -73,7 +74,7 @@ def make_controller(sim, ids, repertoires, selector, log, **overrides):
         capabilities=BOTH,
     )
     kwargs.update(overrides)
-    return RepertoireController(sim, **kwargs)
+    return RepertoireController(JuPedSimAdapter(sim), **kwargs)
 
 
 def test_detects_two_and_three_cycles():

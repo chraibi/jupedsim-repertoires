@@ -14,6 +14,7 @@ from jupedsim_repertoires import (
     PerceivedAgent,
 )
 from jupedsim_repertoires.perception import Perception
+from jupedsim_repertoires.simulation import JuPedSimAdapter
 from repertoire_examples import (
     EntranceParameters,
     Overtaking,
@@ -300,7 +301,10 @@ def perceived_by(own_pos, target_pos, tracked):
         half_angle_deg=90.0,
     )
     tracked_id = target if tracked else None
-    return perception.observe(sim, own, 10.0, EMPTY, tracked=tracked_id), target
+    obs = perception.observe(
+        JuPedSimAdapter(sim), own, 10.0, EMPTY, tracked=tracked_id
+    )
+    return obs, target
 
 
 def test_passing_tracked_target_completes_overtake():

@@ -4,6 +4,7 @@ import dataclasses
 import math
 from collections.abc import Callable, Sequence
 
+from .simulation import Simulation
 from .types import Memory, Observation, PerceivedAgent
 
 
@@ -31,7 +32,7 @@ class Perception:
 
     def observe(
         self,
-        sim,
+        sim: Simulation,
         agent_id: int,
         time: float,
         memory: Memory,
@@ -50,20 +51,17 @@ class Perception:
         Returns:
             The agent's observation. Perceived agents are sorted by id.
         """
-        own = tuple(sim.agent(agent_id).position)
+        own = sim.position(agent_id)
         heading = self._heading(own)
         perceived = [
             PerceivedAgent(
-                id=other.id,
-                position=tuple(other.position),
-                progress=self._progress(tuple(other.position)),
+                id=other,
+                position=position,
+                progress=self._progress(position),
             )
-            for other in sim.agents_in_range(own, self._radius)
-            if other.id != agent_id
-            and (
-                other.id == tracked
-                or self._in_cone(own, heading, tuple(other.position))
-            )
+            for other, position in sim.agents_in_range(own, self._radius)
+            if other != agent_id
+            and (other == tracked or self._in_cone(own, heading, position))
         ]
         perceived.sort(key=lambda p: p.id)
         return Observation(

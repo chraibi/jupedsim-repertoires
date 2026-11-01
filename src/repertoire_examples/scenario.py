@@ -21,6 +21,7 @@ from jupedsim_repertoires import (
 )
 from jupedsim_repertoires.log import RunLog
 from jupedsim_repertoires.perception import MemoryTracker, Perception
+from jupedsim_repertoires.simulation import JuPedSimAdapter
 
 from .entrance import (
     EntranceParameters,
@@ -178,7 +179,7 @@ def build_entrance(
         diagnostic=diagnostic,
     )
     controller = RepertoireController(
-        sim,
+        JuPedSimAdapter(sim),
         repertoires={
             Queueing.name: Queueing(entrance, walkable),
             Overtaking.name: Overtaking(entrance, walkable),
