@@ -3,6 +3,7 @@
 from .controller import RepertoireController, model_capabilities
 from .diagnostics import anchor_cycles, anchor_structure
 from .selectors import FixedSelector, ReplaySelector, sampling_seed, validate
+from .simulation import JuPedSimAdapter, Simulation
 from .types import (
     BehaviouralState,
     Capability,
@@ -24,6 +25,7 @@ __all__ = [
     "Decision",
     "DecisionRequest",
     "FixedSelector",
+    "JuPedSimAdapter",
     "Memory",
     "Observation",
     "PerceivedAgent",
@@ -32,6 +34,7 @@ __all__ = [
     "ReplaySelector",
     "Selector",
     "SelectorError",
+    "Simulation",
     "anchor_cycles",
     "anchor_structure",
     "model_capabilities",

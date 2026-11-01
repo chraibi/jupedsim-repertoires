@@ -26,8 +26,8 @@ go upstream into JuPedSim.
 
 ![Module dependencies](docs/figures/dependencies.svg)
 
-Only the scenarios import `jupedsim`. The layer calls the simulation object
-it is given; the calls are listed in `docs/model.md`. The source of the
+Only the scenarios import `jupedsim`. The layer calls the simulation through
+a small adapter; its calls are listed in `docs/model.md`. The source of the
 figure is `docs/figures/dependencies.html`.
 
 ## Setup

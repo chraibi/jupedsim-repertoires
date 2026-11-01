@@ -14,6 +14,7 @@ from jupedsim_repertoires.perception import (
     passes_since,
 )
 from jupedsim_repertoires.selectors import validate
+from jupedsim_repertoires.simulation import Simulation
 from jupedsim_repertoires.types import (
     BehaviouralState,
     Capability,
@@ -38,7 +39,7 @@ def model_capabilities(state) -> frozenset[Capability]:
 
     Args:
         state: Built-in model state handle of one agent, as returned by
-            ``sim.agent(agent_id).state``.
+            ``jupedsim.Simulation.agent(agent_id).state``.
 
     Returns:
         ``TARGET_CONTROL`` always; ``DESIRED_SPEED`` if the state has a
@@ -67,7 +68,8 @@ class RepertoireController:
     global agent ids.
 
     Args:
-        sim: The simulation.
+        sim: The simulation, for example a
+            :class:`~jupedsim_repertoires.simulation.JuPedSimAdapter`.
         repertoires: Repertoires by name.
         selector: Chooses repertoires for due units.
         perception: Builds observations.
@@ -88,7 +90,7 @@ class RepertoireController:
 
     def __init__(
         self,
-        sim,
+        sim: Simulation,
         *,
         repertoires: Mapping[str, Repertoire],
         selector: Selector,
@@ -157,8 +159,7 @@ class RepertoireController:
             raise ValueError(f"agent {agent_id} is already controlled")
         if repertoire not in self._repertoires:
             raise ValueError(f"unknown repertoire {repertoire!r}")
-        agent = self._sim.agent(agent_id)
-        if (agent.journey_id, agent.stage_id) != (
+        if self._sim.journey_stage(agent_id) != (
             self._steering_journey,
             self._steering_stage,
         ):
@@ -199,7 +200,7 @@ class RepertoireController:
             self._log.diagnostic(now, "anchor_cycle", {"members": list(cycle)})
 
     def _drop_departed(self) -> set[int]:
-        live = {agent.id for agent in self._sim.agents()}
+        live = self._sim.agent_ids()
         for agent_id in [i for i in self._states if i not in live]:
             self._release(agent_id)
             self._memory.forget(agent_id)
@@ -389,10 +390,9 @@ class RepertoireController:
     ) -> None:
         state = self._states[agent_id]
         command = self._repertoires[state.repertoire].control(obs, state)
-        agent = self._sim.agent(agent_id)
-        state = self._apply_target(agent, command, obs)
+        state = self._apply_target(agent_id, command, obs)
         if command.desired_speed is not None:
-            agent.state.desired_speed = command.desired_speed
+            self._sim.set_desired_speed(agent_id, command.desired_speed)
         self._states[agent_id] = state
         self._pending[agent_id] = command.event
         if obs.memory.anchor_lost and (
@@ -402,21 +402,21 @@ class RepertoireController:
         self._log.execution(now, agent_id, state.repertoire, state.execution)
         if command.handoff:
             self._log.handoff(now, agent_id, state.unit_id, state.repertoire)
-            self._sim.switch_agent_journey(
+            self._sim.switch_journey(
                 agent_id, self._exit_journey, self._exit_stage
             )
             self._release(agent_id)
 
     def _apply_target(
-        self, agent, command: Command, obs: Observation
+        self, agent_id: int, command: Command, obs: Observation
     ) -> BehaviouralState:
         state = dataclasses.replace(command.state, execution=command.execution)
         if command.target is None:
             return state
         if self._walkable.covers(shapely.Point(command.target)):
-            agent.final_target = command.target
+            self._sim.set_target(agent_id, command.target)
             return state
-        agent.final_target = obs.position
+        self._sim.set_target(agent_id, obs.position)
         return dataclasses.replace(
             state, execution="standing", target=obs.position
         )

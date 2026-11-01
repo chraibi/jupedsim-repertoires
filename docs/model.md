@@ -351,33 +351,34 @@ Open points:
 
 # What the layer uses from JuPedSim
 
-The layer reaches JuPedSim in two files and only through its public Python
-API. State, memory, selectors, decision scheduling and logs do not use
-JuPedSim.
+The layer reaches the simulation only through the `Simulation` protocol in
+`simulation.py`. `JuPedSimAdapter` implements it with JuPedSim's public
+Python API; tests use a scripted fake. State, memory, selectors, decision
+scheduling and logs do not use the simulation.
 
-| Where | JuPedSim call | Used for |
+| Adapter method | JuPedSim call | Used for |
 |---|---|---|
-| `perception.py` | `sim.agent(id).position` | Own position |
-| `perception.py` | `sim.agents_in_range(position, radius)` | Agents within the perception radius |
-| `controller.py` | `agent.journey_id`, `agent.stage_id` | Check that an added agent is at the direct steering stage |
-| `controller.py` | `sim.elapsed_time()` | Time of observations and decisions |
-| `controller.py` | `sim.iterate(n)` | Advance the movement between control steps |
-| `controller.py` | `sim.agents()` | Detect agents that have left the simulation |
-| `controller.py` | `agent.state` (has `desired_speed`?) | Capabilities of the operational model |
-| `controller.py` | `agent.state.desired_speed` | Speed set by a repertoire |
-| `controller.py` | `agent.final_target` | Target set by a repertoire |
-| `controller.py` | `sim.switch_agent_journey(...)` | Handoff to the exit journey |
+| `position` | `sim.agent(id).position` | Own position |
+| `agents_in_range` | `sim.agents_in_range(position, radius)` | Agents within the perception radius |
+| `journey_stage` | `agent.journey_id`, `agent.stage_id` | Check that an added agent is at the direct steering stage |
+| `elapsed_time` | `sim.elapsed_time()` | Time of observations and decisions |
+| `iterate` | `sim.iterate(n)` | Advance the movement between control steps |
+| `agent_ids` | `sim.agents()` | Detect agents that have left the simulation |
+| `set_desired_speed` | `agent.state.desired_speed` | Speed set by a repertoire |
+| `set_target` | `agent.final_target` | Target set by a repertoire |
+| `switch_journey` | `sim.switch_agent_journey(...)` | Handoff to the exit journey |
+
+`model_capabilities(state)` checks whether an agent's `agent.state` has a
+`desired_speed`; the scenario calls it and passes the result to the
+controller.
 
 The scenario additionally builds the geometry, the journeys with a direct
 steering stage, and the agents with JuPedSim.
 
 `agent.state` and WarpDriver are only on JuPedSim master, so the
-dependency is pinned to a master commit. No separate adapter layer exists:
-with one simulator and this few calls, it would add an interface without a
-second implementation. It becomes worth it if a second simulator is
-supported, or if JuPedSim's API changes in more than these places. A
-capability missing here goes upstream into JuPedSim; behavioural
-assumptions stay in this repository.
+dependency is pinned to a master commit. A JuPedSim API change touches
+only `JuPedSimAdapter`. A capability missing here goes upstream into
+JuPedSim; behavioural assumptions stay in this repository.
 
 ## Run log
 
